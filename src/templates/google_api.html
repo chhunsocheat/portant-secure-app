@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Google Docs API</h1>
+
+<ul>
+    {% if not user %}
+    <li>
+        <a href="{{oauth_url}}">Authorize</a>
+    </li>
+    {% endif %}
+    <li>
+        <a href="https://developers.google.com/docs/api" target="_blank" rel="nofollow">Documentation</a>
+    </li>
+</ul>
+
+{% if user %}
+<form id="create-document-form" style="max-width: 400px;" onsubmit="handleSubmit();">
+    <div class="form-group">
+        <label for="document-title">Document Title</label>
+        <input type="text" id="document-title" class="form-control" name="document-title"
+            value="Hello from Portant PACE">
+    </div>
+    <div class="form-group">
+        <label for="document-text">Document Body</label>
+        <textarea id="document-text" class="form-control" style="resize: none;" name="document-body"
+            rows="10">This document was automatically created with the Portant PACE project. 🥳</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>
+
+<div id="document-result"></div>
+{% endif %}
+
+<script>
+    function handleSubmit() {
+        event.preventDefault();
+
+        const form = $('#create-document-form');
+        form.css("display", "none");
+
+        $("#document-result").html("Creating document...");
+
+        let data = {}
+        for ({ name, value } of form.serializeArray())
+            data[name] = value;
+
+        fetch("/make-document", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(res => res.json())
+            .then(json => {
+                $("#document-result").html(`<a href="${json['url']}"" target="_blank" rel="nofollow">View Document</a>`);
+            })
+            .catch(console.log)
+    }
+</script>
+
+{% endblock %}

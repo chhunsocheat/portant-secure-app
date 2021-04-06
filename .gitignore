@@ -1,0 +1,6 @@
+.vscode
+.env
+client_secret.json
+__pycache__/
+venv/
+db.sqlite

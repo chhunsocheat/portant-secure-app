@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1><span style="background-color: #1476fb; color: white">&nbsp;Portant&nbsp;</span> E2E Data Sourcer</h1>
+
+<div>
+    {% if user %}
+    Welcome, <b>{{user.given_name}} {{user.family_name}}</b>
+    {% else %}
+    <ul>
+        <li><a href="/google-api">Login and Authorize Google</a></li>
+    </ul>
+    {% endif %}
+</div>
+
+{% endblock %}

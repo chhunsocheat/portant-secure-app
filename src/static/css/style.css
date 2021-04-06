@@ -1,0 +1,46 @@
+body {
+  font-family: "Quicksand", sans-serif !important;
+
+  /* Vertical navbar offset */
+  margin-top: 56px;
+}
+
+/* Custom colour scheme */
+
+.bg-portant-primary {
+  background-color: #1476fb;
+}
+
+.bg-portant-secondary {
+  background-color: #797878;
+}
+
+a {
+  color: #797878;
+}
+
+a:hover {
+  color: #1476fb;
+}
+
+/* Sidebar */
+/* Bootstrap layout classes: https://getbootstrap.com/docs/4.3/layout/overview/ */
+
+/* md or larger */
+@media (min-width: 768px) {
+  #sidebar {
+    min-height: 100vh;
+    position: fixed;
+
+    /* Override bootstrap border - right border only */
+    border-width: 0px 1px 0px 0px !important;
+  }
+}
+
+/* Smaller than md */
+@media (max-width: 767.98px) {
+  #sidebar {
+    /* Override bootstrap border - bottom border only */
+    border-width: 0px 0px 1px 0px !important;
+  }
+}
