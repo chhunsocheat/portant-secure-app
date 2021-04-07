@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<form id="signup-form" >
+<form>
     <div class="form-group">
         <label for="email">Email address</label>
         <input name="email" type="email" class="form-control" id="Email1" aria-describedby="emailHelp"
@@ -17,42 +17,9 @@
         <label for="password">Password</label>
         <input name="password" type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
     </div>
-    <p id="process"></p>
-    <button type="submit" class="submit-btn">Sign Up</button>
+
+    <button type="submit" class="btn btn-primary">Sign Up</button>
 </form>
-<script>
-    document.querySelector(".submit-btn").addEventListener("click", handleSubmit)
-
-    function handleSubmit() {
-        event.preventDefault();
-        console.log("Hi");
-        const form = $('#signup-form');
-        form.css("display", "none");
-
-        $("#process").html("Sending...");
-
-        let data = {}
-        for ({
-                name,
-                value
-            } of form.serializeArray())
-            data[name] = value;
-
-        fetch("/signin-data", {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-            .then(res => res.json())
-            .then(json => {
-                window.location.href="/"
-                console.log("back from server", json);
-            })
-            .catch(console.log)
-    }
-</script>
 
 
 {% endblock %}

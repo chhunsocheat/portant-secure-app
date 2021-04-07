@@ -5,12 +5,13 @@ from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, session
 from google.auth.transport import requests
 from google.oauth2.id_token import verify_oauth2_token
+from functools import wraps
 
 load_dotenv()  # Load dotenv before importing project level packages
 
-from drive import GoogleDrive
-from flow import get_flow, login_user
-from models import User, db
+from src.drive import GoogleDrive
+from src.flow import get_flow, login_user
+from src.models import User, OneTimeURL, db
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
@@ -27,23 +28,47 @@ def inject_user():
 
 @app.route("/")
 def index():
+    
     return render_template("index.html")
 # //in app sign in
+
 
 @app.route("/signin")
 def signin():
     return render_template("signin.html")
 
-@app.route("/signin-data", methods=["POST"])
-def signinData():
-    print(request)
-    data=json.loads(request.data)
-    print(data)
-    return json.dumps(data)
 
 @app.route("/signup")
 def signup():
     return render_template("signup.html")
+
+
+def check_Valid_URL(function):
+    @wraps(function)
+    def wrapper(URL):
+        print("Checking URL sxists")
+        if (OneTimeURL.CheckURLExists(URL) == False):
+            print("URL doesn't exist")
+            redirect("/")
+        return function()
+    return wrapper
+
+
+@app.route("/page/<URL>")
+@check_Valid_URL
+def respondents_Submission(URL):
+    context = {}
+    return render_template("respondents_submission_page.html", **context)
+
+
+varible_name = "hello"
+# example of dynamic routing and capturing variable from url
+# https://dev.to/ketanip/routing-in-flask-23ff#:~:text=Dynamic%20routing%20means%20getting%20dynamic,dynamic%20input%20from%20the%20URL.&text=You%20may%20get%20data%20from,but%20is%20recommended%20to%20use.&text=It%20will%20convert%20the%20given,pass%20it%20to%20the%20function.
+@app.route('/<varible_name>/')
+def DynamicUrl(varible_name):
+    OneTimeURL.CreateURL(1)
+    return str(varible_name)
+
 
 @app.route("/google-api")
 def google_api():
@@ -72,7 +97,6 @@ def oauth_callback():
 
 @app.route("/make-document", methods=["POST"])
 def make_document():
-    
     data = json.loads(request.data)
 
     user = User.get_current()

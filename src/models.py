@@ -1,10 +1,14 @@
+from enum import unique
 import json
 from flask import session
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import exists
 from secrets import token_hex
 
-db = SQLAlchemy()
+#import random for now to randomly create URLs
+import random
 
+db = SQLAlchemy()
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -29,7 +33,7 @@ class User(db.Model):
 
     def generate_auth_token(self):
         """
-        Creaes a secret auth token to store user session in client.
+        Creates a secret auth token to store user session in client.
         """
 
         self.auth_token = token_hex(32)
@@ -45,3 +49,27 @@ class User(db.Model):
             return None
 
         return cls.query.filter_by(auth_token=auth_token).first()
+
+class OneTimeURL(db.Model):
+    ID = db.Column(db.Integer, primary_key=True)
+    URL = db.Column(db.String, nullable=True)
+    # IDToken = db.Column(db.String, unique=True, nullable=True)
+
+    """
+    Creates n URLS
+    """
+    def CreateURL(numberOfURLS):
+        Chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        # for i in range(numberOfURLS):
+        #     URL = ''.join(random.choice(Chars) for c in range(5))
+        #     onetimeurl = OneTimeURL(URL=URL)
+        #     db.session.add(onetimeurl)
+        u = OneTimeURL(URL="abc")
+        db.session.add(u)
+        db.session.flush()
+
+    def CheckURLExists(URL):
+        exists = db.session.query(db.exists().where(OneTimeURL.URL == URL)).scalar()
+        return exists
+
+# class URLTokens():
