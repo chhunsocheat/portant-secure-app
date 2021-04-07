@@ -5,7 +5,7 @@ from google.auth.transport import requests
 from google.oauth2.id_token import verify_oauth2_token
 from google_auth_oauthlib.flow import Flow
 
-from src.models import db, User
+from models import db, User
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 

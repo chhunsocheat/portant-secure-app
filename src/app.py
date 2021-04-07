@@ -9,9 +9,9 @@ from functools import wraps
 
 load_dotenv()  # Load dotenv before importing project level packages
 
-from src.drive import GoogleDrive
-from src.flow import get_flow, login_user
-from src.models import User, OneTimeURL, db
+from drive import GoogleDrive
+from flow import get_flow, login_user
+from models import User, OneTimeURL, db
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
@@ -33,9 +33,9 @@ def index():
 # //in app sign in
 
 
-@app.route("/signin")
-def signin():
-    return render_template("signin.html")
+@app.route("/createform")
+def createForm():
+    return render_template("createform.html")
 
 
 @app.route("/signup")
