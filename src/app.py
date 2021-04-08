@@ -6,8 +6,14 @@ from flask import Flask, redirect, render_template, request, session,jsonify
 from google.auth.transport import requests
 from google.oauth2.id_token import verify_oauth2_token
 from functools import wraps
+
+###############################
+# for MongoDB
+from bson.objectid import ObjectId
 import uuid
 import pymongo
+
+###########################
 load_dotenv()  # Load dotenv before importing project level packages
 
 from drive import GoogleDrive
@@ -16,12 +22,13 @@ from flow import get_flow, login_user
 # from models import User, OneTimeURL, db
 
 app = Flask(__name__)
+#register route blueprint
 app.secret_key = os.getenv("SECRET_KEY")
 #mongoDB
 client=pymongo.MongoClient("localhost",27017)
 db=client.portant_app
-
-# import routes
+#try to import route but doesnt work
+from user import routesMongo
 #SQL
 # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///../db.sqlite"
 # app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -41,8 +48,10 @@ class Form:
             "createBy":"Socheat",
             "formObj":data
         }
-        db.forms.insert_one(form)
-        return jsonify(message="Success",data=data), 200
+        if(db.forms.insert_one(form)):
+            return jsonify(message="Success",data=data,form=form), 200
+        return jsonify(message="failed"), 400
+
 
 @app.route('/rec-user-form',methods=['POST'])
 def rec_user_form():
@@ -55,35 +64,71 @@ def createForm():
     return render_template("createform.html")
 
 ############################################
+# Search For Form created By user
+#get an id from the link and search for that document in the database to send back the custom form
+
+@app.route('/respond-form/',methods=['POST','GET'])
+def respond_form():
+    formID= request.args.get("formID")
+
+    form=db.forms.find_one({ "_id": formID })
+    print(form)
+    return render_template("respond_form.html",formID=formID,form=form)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # @app.context_processor
 # def inject_user():
 #     return dict(user=User.get_current())
 
+
 #main route
 @app.route("/")
 def index():
-    
-
-
-
     return render_template("index.html")
-# //in app sign in
 
 
-
-
-
-
-
-
-
-@app.route("/signup")
-def signup():
-    return render_template("signup.html")
-
-
-    
 
 
 # def check_Valid_URL(function):

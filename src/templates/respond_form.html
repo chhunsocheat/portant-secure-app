@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form>
+  <div id="input-container">
+
+      {% for label in form.formObj %}
+      <label id="label1" for="input1">{{label.labelText}}</label><i style="cursor: pointer;margin-left: 0.5em;" id="edit1"
+      class="fas fa-edit"></i>
+      <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
+      placeholder="Enter Info">
+   
+    {% endfor %}
+  
+
+
+
+  </div>
+  <small id="emailHelp" class="form-text text-muted">We'll never share your info with anyone else.</small>
+ 
+  <button class="btn btn-primary" id="log-field">Send To Requester</button>
+
+</form>
+
+{% endblock %}

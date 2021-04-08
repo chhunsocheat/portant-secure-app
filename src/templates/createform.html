@@ -14,7 +14,7 @@
 
   </div>
   <small id="emailHelp" class="form-text text-muted">We'll never share your info with anyone else.</small>
-
+  <p style="display: none;" id="generated-link">Link </p>
   <button class="btn btn-primary" id="add-new-field">Add New Field</button>
 
   <button type="submit" class="btn btn-primary">Generate Link</button>
@@ -97,6 +97,10 @@
       return res.json()
     })
     .then(data=>{
+      document.querySelector("#generated-link").style.display="inline-block"
+      $("#generated-link").html(
+        `Link: localhost:5000/respond-form/?formID=${data.form._id}`
+          );
       console.log(data);
     })
 
