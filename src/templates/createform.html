@@ -6,22 +6,24 @@
   <div id="input-container">
     <label id="label1" for="input1">Your Label</label><i style="cursor: pointer;margin-left: 0.5em;" id="edit1"
       class="fas fa-edit"></i>
-    <input id="hiddenInput1" style="display: none;" />
+    <input name="input1" id="hiddenInput1" style="display: none;" />
     <button id="change1" style="display: none;" class="btn btn-success btn-sm">Change</button>
 
-    <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
+    <input type="text" class="form-control" id="input-data1" aria-describedby="emailHelp"
       placeholder="Enter Info">
 
   </div>
   <small id="emailHelp" class="form-text text-muted">We'll never share your info with anyone else.</small>
-
+  <p style="display: none;" id="generated-link">Link </p>
   <button class="btn btn-primary" id="add-new-field">Add New Field</button>
 
   <button type="submit" class="btn btn-primary">Generate Link</button>
+  <button class="btn btn-primary" id="log-field">Log Field</button>
+
 </form>
 
 <script>
-  let fieldCount=1;
+  let fieldCount = 1;
 
   //function to edit the label
   function editLabel(fieldID) {
@@ -57,18 +59,51 @@
   //function to add new field
   document.querySelector("#add-new-field").addEventListener("click", (e) => {
     fieldCount++;
-      const newField =
-    `  <label id="label${fieldCount}" for="input${fieldCount}">Your Label </label><i style="cursor: pointer;margin-left: 0.5em;" id="edit${fieldCount}" class="fas fa-edit"></i>
+    const newField =
+      `  <label id="label${fieldCount}" for="input${fieldCount}">Your Label </label><i style="cursor: pointer;margin-left: 0.5em;" id="edit${fieldCount}" class="fas fa-edit"></i>
     <input id="hiddenInput${fieldCount}" style="display: none;" />
     <button id="change${fieldCount}" style="display: none;" class="btn btn-success btn-sm">Change</button>
 
-    <input type="text" class="form-control" id="exampleInputEmail${fieldCount}" aria-describedby="emailHelp"
+    <input type="text" class="form-control" id="input-data${fieldCount}" aria-describedby="emailHelp"
       placeholder="Enter Info">
     `
     e.preventDefault();
     document.querySelector("#input-container").insertAdjacentHTML("beforeend", newField);
     editLabel(fieldCount)
     saveInput(fieldCount)
+  })
+  document.querySelector("#log-field").addEventListener("click", () => {
+
+  })
+
+  $("#log-field").bind("click", (e) => {
+    let labelArray = []
+    e.preventDefault();
+    console.log($("label"));
+    $("label").each(function () {
+      labelArray.push({
+        labelID: $(this).attr("id"),
+        labelText:$(this).text()
+      })
+    });
+    fetch("/rec-user-form",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify(labelArray)
+    })
+    .then(res=>{
+      return res.json()
+    })
+    .then(data=>{
+      document.querySelector("#generated-link").style.display="inline-block"
+      $("#generated-link").html(
+        `Link: localhost:5000/respond-form/?formID=${data.form._id}`
+          );
+      console.log(data);
+    })
+
   })
 </script>
 

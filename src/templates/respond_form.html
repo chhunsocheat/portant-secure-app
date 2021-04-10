@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/static/vendor/bootstrap/css/bootstrap.min.css" crossorigin="anonymous">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css"
+    integrity="sha384-SZXxX4whJ79/gErwcOYf+zWLeJdY/qpuqC4cAa9rOGUstPomtqpuNWT9wdPEn2fk" crossorigin="anonymous">
+
+  <script src="/static/vendor/jquery/js/jquery-3.3.1.min.js"></script>
+
+  <title>Document</title>
+</head>
+
+<body>
+
+
+  <div class="container-fluid">
+    <form>
+      <div id="input-container">
+        	<h1>Form Sent From {{form.createBy}}</h1>
+        {% for label in form.formObj %}
+        <label id="label1" for="input1">{{label.labelText}}</label>
+        <input type="text" name="{{label.labelText}}" class="form-control" id="input-{{label.labelID}}" aria-describedby="emailHelp"
+          placeholder="Enter Info">
+
+        {% endfor %}
+
+
+
+
+      </div>
+      <small id="emailHelp" class="form-text text-muted">We'll never share your info with anyone else.</small>
+
+      <button class="btn btn-primary" id="send-to-user">Send To Requester</button>
+
+    </form>
+  </div>
+  <script>
+    document.querySelector("#send-to-user").addEventListener("click", (e) => {
+      e.preventDefault();
+      let inputArr = []
+      $("input").each(function () {
+        if($(this).val()===""){
+          alert(`Please Fill In The Value For ${$(this).attr("name")}`)
+        }
+        inputArr.push({
+          inputID: $(this).attr("id"),
+          inputValue: $(this).val()
+        })
+      });
+      console.log(inputArr);
+
+
+    })
+  </script>
+
+
+</body>
+
+</html>
