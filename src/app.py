@@ -74,7 +74,7 @@ def respond_form():
 
     form=db.forms.find_one({ "_id": formID })
     print(form)
-    return render_template("respond_form.html",formID=formID,form=form)
+    return render_template("respond_form.html",formID=formID,form=form,user=User().get_current())
 
 
 

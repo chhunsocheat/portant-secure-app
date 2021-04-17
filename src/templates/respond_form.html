@@ -23,7 +23,7 @@
   <div class="container-fluid">
     <form>
       <div id="input-container">
-        	<h1>Form Sent From {{form.createBy}}</h1>
+        	<h1>Form Sent From {{user.email}}</h1>
         {% for label in form.formObj %}
         <label id="label1" for="input1">{{label.labelText}}</label>
         <input type="text" name="{{label.labelText}}" class="form-control" id="input-{{label.labelID}}" aria-describedby="emailHelp"
