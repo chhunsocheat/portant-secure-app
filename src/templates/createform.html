@@ -17,7 +17,7 @@
   <p style="display: none;" id="generated-link">Link </p>
   <button class="btn btn-primary" id="add-new-field">Add New Field</button>
 
-  <button class="btn btn-primary" id="log-field">Generated Link</button>
+  <button class="btn btn-primary" id="generated-link-btn">Generated Link</button>
 
 </form>
 
@@ -71,11 +71,11 @@
     editLabel(fieldCount)
     saveInput(fieldCount)
   })
-  document.querySelector("#log-field").addEventListener("click", () => {
+  document.querySelector("#generated-link-btn").addEventListener("click", () => {
 
   })
 
-  $("#log-field").bind("click", (e) => {
+  $("#generated-link-btn").bind("click", (e) => {
     let labelArray = []
     e.preventDefault();
     console.log($("label"));
@@ -98,10 +98,12 @@
     .then(data=>{
       document.querySelector("#generated-link").style.display="inline-block"
       $("#generated-link").html(
-        `Link: localhost:5000/respond-form/?formID=${data.form._id}`
+        `Link: localhost:5000/verify-form/?formID=${data.form._id}`
           );
+          document.querySelector("#generated-link-btn").style.display="none"
       console.log(data);
     })
+    .catch(err=>alert(err))
 
   })
 </script>

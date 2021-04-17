@@ -23,7 +23,7 @@
   <div class="container-fluid">
     <form>
       <div id="input-container">
-        	<h1>Form Sent From {{user.email}}</h1>
+        <h1>Form Sent From {{userEmail}}</h1>
         {% for label in form.formObj %}
         <label id="label1" for="input1">{{label.labelText}}</label>
         <input type="text" name="{{label.labelText}}" class="form-control" id="input-{{label.labelID}}" aria-describedby="emailHelp"
@@ -41,21 +41,42 @@
 
     </form>
   </div>
-  <script>
+  <script type="text/javascript">
+    // <!-- bugs of not sending to server properly if the form label is at default value -->
+  var email = "{{ user.email | safe }}"; 
     document.querySelector("#send-to-user").addEventListener("click", (e) => {
       e.preventDefault();
+    
       let inputArr = []
       $("input").each(function () {
-        if($(this).val()===""){
+
+
+        if ($(this).val() === "") {
           alert(`Please Fill In The Value For ${$(this).attr("name")}`)
         }
         inputArr.push({
+          inputLabel:$(`label[for="${$(this).attr("name")}"]`).html(),
           inputID: $(this).attr("id"),
           inputValue: $(this).val()
         })
       });
-      console.log(inputArr);
 
+      let data={respondArray:[...inputArr],sentFrom:email}
+      console.log(data,"dataa");
+      fetch("/respond-user-form", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
+        })
+        .then(res => {
+          return res.json()
+        })
+        .then(data => {
+
+          console.log(data);
+        })
 
     })
   </script>

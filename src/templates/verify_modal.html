@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Identity</title>
+</head>
+
+<body>
+    <form action="/verify-form-redirect" method="GET">
+        <label for="verifyCode">Verify Code</label>
+        <input type="text" name="verifyCode" id="verifyCode">
+        <button id="verify-btn">Verify</button>
+    </form>
+
+
+    <!-- <script>
+        const urlParams = new URLSearchParams(window.location.search);
+const formID = urlParams.get('formID');
+    document.querySelector("#verify-btn").addEventListener("click", (e) => {
+        e.preventDefault();
+        console.log(formID);
+
+        fetch(`/verify-form-redirect/?formID=${formID}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(document.querySelector("#verifyCode").value)
+        })
+        .then(res => {
+          return res.json()
+        })
+        .then(data => {
+
+          console.log(data);
+        })
+    
+    })
+
+    </script> -->
+</body>
+
+</html>

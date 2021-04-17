@@ -12,7 +12,9 @@ from functools import wraps
 from bson.objectid import ObjectId
 import uuid
 import pymongo
-
+import datetime
+import random
+import string
 ###########################
 load_dotenv()  # Load dotenv before importing project level packages
 
@@ -36,6 +38,8 @@ from secrets import token_hex
 
 # db.init_app(app)
 
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+   return ''.join(random.choice(chars) for _ in range(size))
 
 #########################################
 # Custom form creation and save to mongoDB database
@@ -44,43 +48,98 @@ class Form:
     def createForm(self):
 
         data = json.loads(request.data)
-        form={
-            "_id":uuid.uuid4().hex,
-            "createBy":"Socheat",
-            "formObj":data
+        form = {
+            "_id": uuid.uuid4().hex,
+            "createBy": User().get_current().get("email"),
+            "formObj": data,
+            "date": datetime.datetime.now(),
+            "verifyCode":id_generator()
         }
         if(db.forms.insert_one(form)):
             return jsonify(message="Success",data=data,form=form), 200
         return jsonify(message="failed"), 400
 
 
-@app.route('/rec-user-form',methods=['POST'])
+############################################
+#routes related to resquest Form
+@app.route('/rec-user-form', methods=['POST'])
 def rec_user_form():
     return Form().createForm()
 
-# when user create their own form 
+
+
+# when user create their own request form
 @app.route("/createform")
 def createForm():
     
     return render_template("createform.html")
 
-############################################
-# Search For Form created By user
-#get an id from the link and search for that document in the database to send back the custom form
+@app.route('/verify-form/', methods=['POST', 'GET'])
+def verify_form():
+    formID = request.args.get("formID")
+    return render_template("verify_modal.html")
 
-@app.route('/respond-form/',methods=['POST','GET'])
+@app.route('/verify-form-redirect', methods=['GET'])
+def verify_form1():
+    print(request.args.get("verifyCode"))
+    
+    # verifyCodeClient = json.loads(request.data)
+    # formID = request.args.get("formID")
+    # form = db.forms.find_one({"_id": formID})
+    # if(verifyCodeClient==form.get("verifyCode")):
+    #     print("Correct")
+    #     return redirect("/respond-form/?formID=",formID)
+
+    return jsonify(message="Verify Code Not Correct"), 200
+
+# Search For Form created By user
+# get an id from the link and search for that document in the database to send back the custom form
+@app.route('/respond-form/', methods=['POST', 'GET'])
 def respond_form():
     formID= request.args.get("formID")
 
     form=db.forms.find_one({ "_id": formID })
     print(form)
-    return render_template("respond_form.html",formID=formID,form=form,user=User().get_current())
-
-
-
+    return render_template("respond_form.html", formID=formID, form=form, userEmail=User().get_current().get("email"))
 
 
 ############################################
+# Respondant Form
+class ResForm:
+    def resForm(self):
+        print("Before Data")
+
+        data = json.loads(request.data)
+        print(data, "data that got from client")
+        # add the responded form to its own schema
+        respondantForm = {
+            "_id": uuid.uuid4().hex,
+            "sendBy": data.get("sentFrom"),
+            "formObj": data,
+            "date": datetime.datetime.now()
+        }
+        print("Before Success")
+
+        # add the responded form to the user schema
+        if(db.respondantForms.insert_one(respondantForm)):
+            data["formId"] = respondantForm.get("_id")
+            db.user.update({"email": data.get("sentFrom")},
+                           {'$push': {'respondForm': data, "listOfForm": respondantForm.get("_id")},
+                            })
+            print("Success")
+            return jsonify(message="Success", respondantForm=respondantForm, data=data), 200
+        return jsonify(data=data), 200
+
+
+
+@app.route('/respond-user-form', methods=['POST'])
+def respond_user_form():
+    return ResForm().resForm()
+
+
+############################################
+
+
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
 SCOPES = [
