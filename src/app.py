@@ -29,6 +29,7 @@ client=pymongo.MongoClient("localhost",27017)
 db=client.portant_app
 #try to import route but doesnt work
 from user import routesMongo
+from secrets import token_hex
 #SQL
 # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///../db.sqlite"
 # app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -73,7 +74,68 @@ def respond_form():
 
     form=db.forms.find_one({ "_id": formID })
     print(form)
-    return render_template("respond_form.html",formID=formID,form=form)
+    return render_template("respond_form.html",formID=formID,form=form,user=User().get_current())
+
+
+
+
+
+############################################
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+
+SCOPES = [
+    "openid",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/drive",
+]
+
+# User Class
+class User:
+    def login_user(self,code):
+        flow = get_flow()
+
+        flow.fetch_token(code=code)
+
+        creds = flow.credentials
+        idinfo = verify_oauth2_token(creds.id_token, requests.Request(), GOOGLE_CLIENT_ID)
+
+        email = idinfo["email"]
+        
+        user = db.user.find_one({"email":email})
+            
+        # if there is no user in our database
+        #create user then return them
+        if not user:
+            user={
+                "_id":uuid.uuid4().hex,
+                "email":idinfo.get("email"),
+                "given_name": idinfo.get("given_name"),
+                "family_name":idinfo.get("family_name"),
+                "avatar_url": idinfo.get("picture"),
+                "auth_token" : token_hex(32),
+                "oauth_credentials":{
+                    "token": creds.token,
+                    "refresh_token": creds.refresh_token,
+                    "token_uri": creds.token_uri,
+                    "scopes": creds.scopes,
+                }
+            }
+            db.user.insert_one(user)
+            return user
+        #otherwise return the user that was found by email in the database
+        return user
+    def get_current(self):
+        """
+        Returns current user, based on stored auth token
+        """
+        auth_token = session.get("auth_token")
+        print(auth_token)
+        if not auth_token:
+            return None
+        user = db.user.find_one({"auth_token":auth_token})
+
+        return user 
 
 
 
@@ -110,17 +172,9 @@ def respond_form():
 
 
 
-
-
-
-
-
-
-
-
-# @app.context_processor
-# def inject_user():
-#     return dict(user=User.get_current())
+@app.context_processor
+def inject_user():
+    return dict(user=User().get_current())
 
 
 #main route
@@ -177,8 +231,10 @@ def google_api():
 def oauth_callback():
     code = request.args.get("code")
 
-    user = login_user(code)
-    session["auth_token"] = user.auth_token
+    # user = login_user(code)
+    user= User().login_user(code)
+    print(user["auth_token"],"USER###################")
+    session["auth_token"] = user["auth_token"]
 
     return redirect("/")
 
