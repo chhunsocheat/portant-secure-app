@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="font-weight-bold">List of all Responded Forms</h1>
+
+
+{% if user %}
+<div>
+    <div>
+        {% for form in user.respondForm %}
+
+        <div style="margin: 20px 0px;" class="card">
+            <div class="card-header">
+                {{form.formId}}
+            </div>
+
+
+
+            {% for label in form.respondArray %}
+            <div class="card-body">
+                <h5 style="border-bottom: 1px solid black;width: 30%;padding-bottom: 5px;" class="card-title">{{label.inputLabel}}</h5>
+                <p class="card-text">{{label.inputValue}}</p>
+            </div>
+            {% endfor %}
+
+        </div>
+            {% endfor %}
+    </div>
+</div>
+
+<div id="document-result"></div>
+{% endif %}
+
+<script>
+
+</script>
+
+{% endblock %}

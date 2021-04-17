@@ -23,11 +23,11 @@
   <div class="container-fluid">
     <form>
       <div id="input-container">
-        	<h1>Form Sent From {{user.email}}</h1>
+        <h1>Form Sent From {{user.email}}</h1>
         {% for label in form.formObj %}
-        <label id="label1" for="input1">{{label.labelText}}</label>
-        <input type="text" name="{{label.labelText}}" class="form-control" id="input-{{label.labelID}}" aria-describedby="emailHelp"
-          placeholder="Enter Info">
+        <label id="label1" for="{{label.labelText}}">{{label.labelText}}</label>
+        <input type="text" name="{{label.labelText}}" class="form-control" id="input-{{label.labelID}}"
+          aria-describedby="emailHelp" placeholder="Enter Info">
 
         {% endfor %}
 
@@ -41,22 +41,54 @@
 
     </form>
   </div>
-  <script>
+  <script type="text/javascript">
+  var email = "{{ user.email | safe }}"; 
     document.querySelector("#send-to-user").addEventListener("click", (e) => {
       e.preventDefault();
+    
+      console.log(email);
       let inputArr = []
+     
       $("input").each(function () {
-        if($(this).val()===""){
+        if ($(this).val() === "") {
           alert(`Please Fill In The Value For ${$(this).attr("name")}`)
         }
         inputArr.push({
+          inputLabel:$(`label[for=${$(this).attr("name")}]`).html(),
           inputID: $(this).attr("id"),
           inputValue: $(this).val()
         })
       });
-      console.log(inputArr);
+      let data={respondArray:[...inputArr],sentFrom:email}
 
+      fetch("/respond-user-form", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
+        })
+        .then(res => {
+          return res.json()
+        })
+        .then(data => {
 
+          console.log(data);
+        })
+      // fetch("/respond-user-form", {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json"
+      //     },
+      //     body: JSON.stringify(inputArr)
+      //   })
+      //   .then(res => res.json())
+      //   .then(data => {
+      //     console.log(data);
+      //   })
+      //   .catch(err => {
+      //     console.log(err);
+      //   })
     })
   </script>
 

@@ -1,8 +1,12 @@
+from secrets import token_hex
+from user import routesMongo
+from flow import get_flow, login_user
+from drive import GoogleDrive
 import json
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, redirect, render_template, request, session,jsonify
+from flask import Flask, redirect, render_template, request, session, jsonify
 from google.auth.transport import requests
 from google.oauth2.id_token import verify_oauth2_token
 from functools import wraps
@@ -12,25 +16,22 @@ from functools import wraps
 from bson.objectid import ObjectId
 import uuid
 import pymongo
+import datetime
 
 ###########################
 load_dotenv()  # Load dotenv before importing project level packages
 
-from drive import GoogleDrive
-from flow import get_flow, login_user
 
 # from models import User, OneTimeURL, db
 
 app = Flask(__name__)
-#register route blueprint
+# register route blueprint
 app.secret_key = os.getenv("SECRET_KEY")
-#mongoDB
-client=pymongo.MongoClient("localhost",27017)
-db=client.portant_app
-#try to import route but doesnt work
-from user import routesMongo
-from secrets import token_hex
-#SQL
+# mongoDB
+client = pymongo.MongoClient("localhost", 27017)
+db = client.portant_app
+# try to import route but doesnt work
+# SQL
 # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///../db.sqlite"
 # app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -44,40 +45,71 @@ class Form:
     def createForm(self):
 
         data = json.loads(request.data)
-        form={
-            "_id":uuid.uuid4().hex,
-            "createBy":"Socheat",
-            "formObj":data
+        form = {
+            "_id": uuid.uuid4().hex,
+            "createBy": "Socheat",
+            "formObj": data
         }
         if(db.forms.insert_one(form)):
-            return jsonify(message="Success",data=data,form=form), 200
+            return jsonify(message="Success", data=data, form=form), 200
         return jsonify(message="failed"), 400
 
+# receive form from the user and create a document
 
-@app.route('/rec-user-form',methods=['POST'])
+
+@app.route('/rec-user-form', methods=['POST'])
 def rec_user_form():
     return Form().createForm()
 
-# when user create their own form 
+# when user create their own form
+
+
 @app.route("/createform")
 def createForm():
-    
+
     return render_template("createform.html")
 
 ############################################
 # Search For Form created By user
-#get an id from the link and search for that document in the database to send back the custom form
+# get an id from the link and search for that document in the database to send back the custom form
 
-@app.route('/respond-form/',methods=['POST','GET'])
+
+@app.route('/respond-form/', methods=['POST', 'GET'])
 def respond_form():
-    formID= request.args.get("formID")
+    formID = request.args.get("formID")
 
-    form=db.forms.find_one({ "_id": formID })
+    form = db.forms.find_one({"_id": formID})
     print(form)
-    return render_template("respond_form.html",formID=formID,form=form,user=User().get_current())
+    return render_template("respond_form.html", formID=formID, form=form, user=User().get_current())
 
 
+############################################
+# Respondant Form
+class ResForm:
+    def resForm(self):
+        data = json.loads(request.data)
+        print(data)
+        # add the responded form to its own schema
+        respondantForm = {
+            "_id": uuid.uuid4().hex,
+            "sendBy": data.get("sentFrom"),
+            "formObj": data,
+            "date": datetime.datetime.now()
+        }
+        # add the responded form to the user schema
+        if(db.respondantForms.insert_one(respondantForm)):
+            data["formId"] = respondantForm.get("_id")
+            db.user.update({"email": data.get("sentFrom")},
+                           {'$push': {'respondForm': data, "listOfForm": respondantForm.get("_id")},
+                            })
+            print("Success")
+            return jsonify(message="Success", respondantForm=respondantForm, data=data), 200
+        return jsonify(data=data), 200
 
+
+@app.route('/respond-user-form', methods=['POST'])
+def respond_user_form():
+    return ResForm().resForm()
 
 
 ############################################
@@ -91,30 +123,33 @@ SCOPES = [
 ]
 
 # User Class
+
+
 class User:
-    def login_user(self,code):
+    def login_user(self, code):
         flow = get_flow()
 
         flow.fetch_token(code=code)
 
         creds = flow.credentials
-        idinfo = verify_oauth2_token(creds.id_token, requests.Request(), GOOGLE_CLIENT_ID)
+        idinfo = verify_oauth2_token(
+            creds.id_token, requests.Request(), GOOGLE_CLIENT_ID)
 
         email = idinfo["email"]
-        
-        user = db.user.find_one({"email":email})
-            
+
+        user = db.user.find_one({"email": email})
+
         # if there is no user in our database
-        #create user then return them
+        # create user then return them
         if not user:
-            user={
-                "_id":uuid.uuid4().hex,
-                "email":idinfo.get("email"),
+            user = {
+                "_id": uuid.uuid4().hex,
+                "email": idinfo.get("email"),
                 "given_name": idinfo.get("given_name"),
-                "family_name":idinfo.get("family_name"),
+                "family_name": idinfo.get("family_name"),
                 "avatar_url": idinfo.get("picture"),
-                "auth_token" : token_hex(32),
-                "oauth_credentials":{
+                "auth_token": token_hex(32),
+                "oauth_credentials": {
                     "token": creds.token,
                     "refresh_token": creds.refresh_token,
                     "token_uri": creds.token_uri,
@@ -123,8 +158,10 @@ class User:
             }
             db.user.insert_one(user)
             return user
-        #otherwise return the user that was found by email in the database
+        # otherwise return the user that was found by email in the database
         return user
+  
+
     def get_current(self):
         """
         Returns current user, based on stored auth token
@@ -133,58 +170,28 @@ class User:
         print(auth_token)
         if not auth_token:
             return None
-        user = db.user.find_one({"auth_token":auth_token})
+        user = db.user.find_one({"auth_token": auth_token})
 
-        return user 
-
-
+        return user
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+###########################################################
 @app.context_processor
 def inject_user():
     return dict(user=User().get_current())
 
 
-#main route
+# main route
 @app.route("/")
 def index():
     return render_template("index.html")
 
 
+@app.route("/list-all-resp-forms")
+def allRespForms():
+    return render_template("all_forms.html")
 
-
+    
 # def check_Valid_URL(function):
 #     @wraps(function)
 #     def wrapper(URL):
@@ -201,8 +208,6 @@ def index():
 # def respondents_Submission(URL):
 #     context = {}
 #     return render_template("respondents_submission_page.html", **context)
-
-
 varible_name = "hello"
 # example of dynamic routing and capturing variable from url
 # https://dev.to/ketanip/routing-in-flask-23ff#:~:text=Dynamic%20routing%20means%20getting%20dynamic,dynamic%20input%20from%20the%20URL.&text=You%20may%20get%20data%20from,but%20is%20recommended%20to%20use.&text=It%20will%20convert%20the%20given,pass%20it%20to%20the%20function.
@@ -232,8 +237,8 @@ def oauth_callback():
     code = request.args.get("code")
 
     # user = login_user(code)
-    user= User().login_user(code)
-    print(user["auth_token"],"USER###################")
+    user = User().login_user(code)
+    print(user["auth_token"], "USER###################")
     session["auth_token"] = user["auth_token"]
 
     return redirect("/")
