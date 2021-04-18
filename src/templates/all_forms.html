@@ -5,34 +5,41 @@
 
 
 {% if user %}
-<div>
+
+{% if  user.respondForm|length <= 0 %}
+<h1>User has no form<hi />
+
+    {% else %}
+
+
     <div>
-        {% for form in user.respondForm %}
+        <div>
+            {% for form in user.respondForm %}
 
-        <div style="margin: 20px 0px;" class="card">
-            <div class="card-header">
-                {{form.formId}}
-            </div>
+            <div style="margin: 20px 0px;" class="card">
+                <div class="card-header">
+                    {{form.formId}}
+                </div>
 
 
 
-            {% for label in form.respondArray %}
-            <div class="card-body">
-                <h5 style="border-bottom: 1px solid black;width: 30%;padding-bottom: 5px;" class="card-title">{{label.inputLabel}}</h5>
-                <p class="card-text">{{label.inputValue}}</p>
+                {% for label in form.respondArray %}
+                <div class="card-body">
+                    <h5 style="border-bottom: 1px solid black;width: 30%;padding-bottom: 5px;" class="card-title">
+                        {{label.inputLabel}}</h5>
+                    <p class="card-text">{{label.inputValue}}</p>
+                </div>
+                {% endfor %}
+
             </div>
             {% endfor %}
-
         </div>
-            {% endfor %}
     </div>
-</div>
+    {% endif %}
+    {% endif %}
 
-<div id="document-result"></div>
-{% endif %}
+    <script>
 
-<script>
+    </script>
 
-</script>
-
-{% endblock %}
+    {% endblock %}

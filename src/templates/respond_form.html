@@ -45,6 +45,7 @@
   var email = "{{ user.email | safe }}"; 
     document.querySelector("#send-to-user").addEventListener("click", (e) => {
       e.preventDefault();
+      document.querySelector("#send-to-user").innerHTML="Sending..."
     
       console.log(email);
       let inputArr = []
@@ -53,8 +54,9 @@
         if ($(this).val() === "") {
           alert(`Please Fill In The Value For ${$(this).attr("name")}`)
         }
+        console.log($(this).attr("name"));
         inputArr.push({
-          inputLabel:$(`label[for=${$(this).attr("name")}]`).html(),
+          inputLabel:$(this).attr("name"),
           inputID: $(this).attr("id"),
           inputValue: $(this).val()
         })
@@ -72,23 +74,13 @@
           return res.json()
         })
         .then(data => {
-
+          document.querySelector("#send-to-user").innerHTML=`Done <i class="fas fa-check"></i>`;
+          document.querySelector("#send-to-user").disabled=true;
+          
+          document.querySelector("#send-to-user").classList.add("btn-success");
           console.log(data);
         })
-      // fetch("/respond-user-form", {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json"
-      //     },
-      //     body: JSON.stringify(inputArr)
-      //   })
-      //   .then(res => res.json())
-      //   .then(data => {
-      //     console.log(data);
-      //   })
-      //   .catch(err => {
-      //     console.log(err);
-      //   })
+
     })
   </script>
 
