@@ -79,18 +79,17 @@ def verify_form():
     formID = request.args.get("formID")
     return render_template("verify_modal.html")
 
-@app.route('/verify-form-redirect', methods=['GET'])
+@app.route('/verify-form-redirect/', methods=['POST'])
 def verify_form1():
     print(request.args.get("verifyCode"))
-    
-    # verifyCodeClient = json.loads(request.data)
-    # formID = request.args.get("formID")
-    # form = db.forms.find_one({"_id": formID})
-    # if(verifyCodeClient==form.get("verifyCode")):
-    #     print("Correct")
-    #     return redirect("/respond-form/?formID=",formID)
+    verifyCodeClient = json.loads(request.data)
+    formID = request.args.get("formID")
+    form = db.forms.find_one({"_id": formID})
+    if(verifyCodeClient==form.get("verifyCode")):
+        print("Correct")
+        return jsonify(message="Verify Success",formID=formID), 200
 
-    return jsonify(message="Verify Code Not Correct"), 200
+    return jsonify(message="Verify Code Not Correct",verify=False), 404
 
 # Search For Form created By user
 # get an id from the link and search for that document in the database to send back the custom form
@@ -197,6 +196,9 @@ class User:
         return user 
 
 
+@app.route("/list-all-resp-forms")
+def allRespForms():
+    return render_template("all_forms.html")
 
 
 

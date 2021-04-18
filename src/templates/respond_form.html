@@ -23,11 +23,11 @@
   <div class="container-fluid">
     <form>
       <div id="input-container">
-        <h1>Form Sent From {{userEmail}}</h1>
+        <h1>Form Sent From {{user.email}}</h1>
         {% for label in form.formObj %}
-        <label id="label1" for="input1">{{label.labelText}}</label>
-        <input type="text" name="{{label.labelText}}" class="form-control" id="input-{{label.labelID}}" aria-describedby="emailHelp"
-          placeholder="Enter Info">
+        <label id="label1" for="{{label.labelText}}">{{label.labelText}}</label>
+        <input type="text" name="{{label.labelText}}" class="form-control" id="input-{{label.labelID}}"
+          aria-describedby="emailHelp" placeholder="Enter Info">
 
         {% endfor %}
 
@@ -42,27 +42,27 @@
     </form>
   </div>
   <script type="text/javascript">
-    // <!-- bugs of not sending to server properly if the form label is at default value -->
   var email = "{{ user.email | safe }}"; 
     document.querySelector("#send-to-user").addEventListener("click", (e) => {
       e.preventDefault();
+      document.querySelector("#send-to-user").innerHTML="Sending..."
     
+      console.log(email);
       let inputArr = []
+     
       $("input").each(function () {
-
-
         if ($(this).val() === "") {
           alert(`Please Fill In The Value For ${$(this).attr("name")}`)
         }
+        console.log($(this).attr("name"));
         inputArr.push({
-          inputLabel:$(`label[for="${$(this).attr("name")}"]`).html(),
+          inputLabel:$(this).attr("name"),
           inputID: $(this).attr("id"),
           inputValue: $(this).val()
         })
       });
-
       let data={respondArray:[...inputArr],sentFrom:email}
-      console.log(data,"dataa");
+
       fetch("/respond-user-form", {
           method: "POST",
           headers: {
@@ -74,10 +74,26 @@
           return res.json()
         })
         .then(data => {
-
+          document.querySelector("#send-to-user").innerHTML=`Done <i class="fas fa-check"></i>`;
+          document.querySelector("#send-to-user").disabled=true;
+          
+          document.querySelector("#send-to-user").classList.add("btn-success");
           console.log(data);
         })
-
+      // fetch("/respond-user-form", {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json"
+      //     },
+      //     body: JSON.stringify(inputArr)
+      //   })
+      //   .then(res => res.json())
+      //   .then(data => {
+      //     console.log(data);
+      //   })
+      //   .catch(err => {
+      //     console.log(err);
+      //   })
     })
   </script>
 
