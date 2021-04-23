@@ -18,7 +18,7 @@
 </ul>
 
 {% if user %}
-<form id="create-document-form" style="max-width: 400px;" onsubmit="handleSubmit();">
+<!-- <form id="create-document-form" style="max-width: 400px;" onsubmit="handleSubmit();">
     <div class="form-group">
         <label for="document-title">Document Title</label>
         <input type="text" id="document-title" class="form-control" name="document-title"
@@ -30,12 +30,52 @@
             rows="10">This document was automatically created with the Portant PACE project. 🥳</textarea>
     </div>
     <button type="submit" class="btn btn-primary">Create</button>
-</form>
+</form> -->
+
+
+{% if  user.respondForm|length <= 0 %}
+    <h1>User has no form<hi />
+{% else %}
+    {% for form in user.respondForm %}
+        
+    <div style="margin: 20px 0px;" class="card">
+        <div class="card-header">
+            <!-- {{form.formLabel}} -->
+            {{form.respondArray[0].inputLabel}}
+            <input type="checkbox" id="{{form.formId}}" style="float: right; width: 20px; height: 20px;" onclick="handleCheckboxClick(this)">
+        </div>
+    </div>
+
+    {% endfor %}
+{% endif %}
 
 <div id="document-result"></div>
 {% endif %}
 
 <script>
+    var checkBoxes = new Array;
+
+    function handleCheckboxClick(element) {
+        // fetch("/make-document", {
+        //     method: "POST",
+        //     headers: {
+        //         'Content-Type': 'application/json'
+        //     },
+        //     body: JSON.stringify(data)
+        // })
+        
+        
+        if (checkBoxes.find(e => e == element.id)) {
+            console.log("Removing");
+            checkBoxes = checkBoxes.filter(e => e != element.id);
+        } else {
+            console.log("Adding");
+            checkBoxes.push(element.id)
+        }
+        console.log(element.id);
+        console.log(checkBoxes);
+    }
+
     function handleSubmit() {
         event.preventDefault();
 

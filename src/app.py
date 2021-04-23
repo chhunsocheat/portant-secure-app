@@ -264,7 +264,7 @@ def index():
 #     return render_template("respondents_submission_page.html", **context)
 
 
-varible_name = "hello"
+# varible_name = "hello"
 # example of dynamic routing and capturing variable from url
 # https://dev.to/ketanip/routing-in-flask-23ff#:~:text=Dynamic%20routing%20means%20getting%20dynamic,dynamic%20input%20from%20the%20URL.&text=You%20may%20get%20data%20from,but%20is%20recommended%20to%20use.&text=It%20will%20convert%20the%20given,pass%20it%20to%20the%20function.
 # @app.route('/<varible_name>/')
@@ -284,7 +284,7 @@ def google_api():
 
     context = {}
     context["oauth_url"] = oauth_url
-
+    
     return render_template("google_api.html", **context)
 
 
