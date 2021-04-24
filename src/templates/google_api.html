@@ -18,36 +18,34 @@
 </ul>
 
 {% if user %}
-<!-- <form id="create-document-form" style="max-width: 400px;" onsubmit="handleSubmit();">
-    <div class="form-group">
-        <label for="document-title">Document Title</label>
-        <input type="text" id="document-title" class="form-control" name="document-title"
-            value="Hello from Portant PACE">
-    </div>
-    <div class="form-group">
-        <label for="document-text">Document Body</label>
-        <textarea id="document-text" class="form-control" style="resize: none;" name="document-body"
-            rows="10">This document was automatically created with the Portant PACE project. 🥳</textarea>
-    </div>
-    <button type="submit" class="btn btn-primary">Create</button>
-</form> -->
+    {% if  user.respondForm|length <= 0 %}
+        <h1>User has no form<hi />
+    {% else %}
+        {% for form in user.respondForm %}
+            <div style="margin: 20px 0px;" class="card">
+                <div class="card-header">
+                    <!-- {{form.formLabel}} -->
+                    {{form.respondArray[0].inputLabel}}
+                    <input type="checkbox" id="{{form.formId}}" style="float: right; width: 20px; height: 20px;" onclick="handleCheckboxClick(this)">
+                </div>
+            </div>
+        {% endfor %}
 
-
-{% if  user.respondForm|length <= 0 %}
-    <h1>User has no form<hi />
-{% else %}
-    {% for form in user.respondForm %}
-        
-    <div style="margin: 20px 0px;" class="card">
-        <div class="card-header">
-            <!-- {{form.formLabel}} -->
-            {{form.respondArray[0].inputLabel}}
-            <input type="checkbox" id="{{form.formId}}" style="float: right; width: 20px; height: 20px;" onclick="handleCheckboxClick(this)">
+        <!-- <form id="create-document-form" style="max-width: 400px;" onsubmit="handleSubmit();">
+        <div class="form-group">
+            <label for="document-title">Document Title</label>
+            <input type="text" id="document-title" class="form-control" name="document-title"
+                value="Hello from Portant PACE">
         </div>
-    </div>
+        <div class="form-group">
+            <label for="document-text">Document Body</label>
+            <textarea id="document-text" class="form-control" style="resize: none;" name="document-body"
+                rows="10">This document was automatically created with the Portant PACE project. 🥳</textarea>
+        </div> -->
+        <button type="submit" class="btn btn-primary" onclick="handleSubmit();">Create</button>
+        <!-- </form> -->
 
-    {% endfor %}
-{% endif %}
+    {% endif %}
 
 <div id="document-result"></div>
 {% endif %}
@@ -72,28 +70,31 @@
             console.log("Adding");
             checkBoxes.push(element.id)
         }
-        console.log(element.id);
-        console.log(checkBoxes);
+        // console.log(element.id);
+        // console.log(checkBoxes);
     }
 
     function handleSubmit() {
         event.preventDefault();
 
-        const form = $('#create-document-form');
-        form.css("display", "none");
+        // update this part so it retrieves all the selected forms and adds them together to submit to google drive
+        // const form = $('#create-document-form');
+        // form.css("display", "none");
 
         $("#document-result").html("Creating document...");
 
-        let data = {}
-        for ({ name, value } of form.serializeArray())
-            data[name] = value;
+        // let data = {}
+        // for ({ name, value } of form.serializeArray())
+        //     data[name] = value;
+
+        console.log(JSON.stringify(checkBoxes));
 
         fetch("/make-document", {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(checkBoxes)
         })
             .then(res => res.json())
             .then(json => {

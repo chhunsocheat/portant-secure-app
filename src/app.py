@@ -61,7 +61,7 @@ class Form:
 
 
 ############################################
-#routes related to resquest Form
+#routes related to request Form
 @app.route('/rec-user-form', methods=['POST'])
 def rec_user_form():
     return Form().createForm()
@@ -272,6 +272,8 @@ def index():
 #     OneTimeURL.CreateURL(1)
 #     return str(varible_name)
 
+############################################
+#routes related to Google Drive API stuff
 
 @app.route("/google-api")
 def google_api():
@@ -287,6 +289,26 @@ def google_api():
     
     return render_template("google_api.html", **context)
 
+@app.route("/")
+
+
+
+@app.route("/make-document", methods=["POST"])
+def make_document():
+    data = json.loads(request.data)
+    print(data)
+
+    # user = User.get_current()
+    # drive = GoogleDrive(user)
+
+    # document_id = drive.create_document(data["document-title"])
+    # drive.append_document_text(document_id, data["document-body"])
+
+    # payload = {"url": f"https://docs.google.com/document/d/{document_id}"}
+    payload = {"url": f"https://docs.google.com/document/d/"}
+    return (json.dumps(payload), 200)
+
+############################################
 
 @app.route("/oauth-callback")
 def oauth_callback():
@@ -298,21 +320,6 @@ def oauth_callback():
     session["auth_token"] = user["auth_token"]
 
     return redirect("/")
-
-
-# @app.route("/make-document", methods=["POST"])
-# def make_document():
-#     data = json.loads(request.data)
-
-#     user = User.get_current()
-#     drive = GoogleDrive(user)
-
-#     document_id = drive.create_document(data["document-title"])
-#     drive.append_document_text(document_id, data["document-body"])
-
-#     payload = {"url": f"https://docs.google.com/document/d/{document_id}"}
-#     return (json.dumps(payload), 200)
-
 
 @app.route("/logout")
 def logout():
