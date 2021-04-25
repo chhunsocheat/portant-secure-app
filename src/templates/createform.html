@@ -14,7 +14,8 @@
 
   </div>
   <small id="emailHelp" class="form-text text-muted">We'll never share your info with anyone else.</small>
-  <p style="display: none;" id="generated-link">Link </p>
+  <p style="display: none;" id="generated-link-wrapper">Link </p>
+  <button class="btn btn-primary" id="Copy-Text-Button" style="display:none; margin-left: 20px;" onclick="handleCopyText()">Copy Text</button>
   <button class="btn btn-primary" id="add-new-field">Add New Field</button>
 
   <button class="btn btn-primary" id="generated-link-btn">Generated Link</button>
@@ -23,6 +24,19 @@
 
 <script>
   let fieldCount = 1;
+
+  function handleCopyText() {
+    var copyText = document.getElementById("generated-link").innerText;
+
+    navigator.clipboard.writeText(copyText).then(
+      function() {
+        // succsess
+        alert("Copied the text: " + copyText);
+      }, function (err) {
+        // failure
+        alert("Failed to copy text!" + err);
+      })
+  }
 
   //function to edit the label
   function editLabel(fieldID) {
@@ -71,9 +85,11 @@
     editLabel(fieldCount)
     saveInput(fieldCount)
   })
-  document.querySelector("#generated-link-btn").addEventListener("click", () => {
 
-  })
+  // not sure what this is needed for
+  // document.querySelector("#generated-link-btn").addEventListener("click", () => {
+
+  // })
 
   $("#generated-link-btn").bind("click", (e) => {
     let labelArray = []
@@ -96,11 +112,11 @@
       return res.json()
     })
     .then(data=>{
-      document.querySelector("#generated-link").style.display="inline-block"
-      $("#generated-link").html(
-        `Link: localhost:5000/verify-form/?formID=${data.form._id}`
-          );
-          document.querySelector("#generated-link-btn").style.display="none"
+      $("#generated-link-wrapper").html(`<a href="verify-form/?formID=${data.form._id}" id="generated-link">localhost:5000/verify-form/?formID=${data.form._id}</a>`);
+      document.querySelector("#generated-link-wrapper").style.display="inline-block"
+      document.querySelector("#Copy-Text-Button").style.display="inline-block"
+      document.querySelector("#generated-link-btn").style.display="none"
+      document.querySelector("#add-new-field").style.display="none"
       console.log(data);
     })
     .catch(err=>alert(err))

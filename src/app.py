@@ -60,8 +60,8 @@ class Form:
             "formObj": data,
             "date": datetime.datetime.now(),
             "verifyCode":id_generator(),
-            "pubKey": (str(keyPair[0]['n']), str(keyPair[0]['e'])), # ‘n’ and ‘e’. PubKey structure
-            "privKey": (str(keyPair[1]['n']), str(keyPair[1]['e']), str(keyPair[1]['d']), str(keyPair[1]['p']), str(keyPair[1]['q'])),  # ‘n’, ‘e’, ‘d’, ‘p’, ‘q’. PrivKey structure
+            "pubKey": (str(keyPair[0]['n']), str(keyPair[0]['e'])), # (n, e). PubKey structure
+            "privKey": (str(keyPair[1]['n']), str(keyPair[1]['e']), str(keyPair[1]['d']), str(keyPair[1]['p']), str(keyPair[1]['q'])),  # (n, e, d, p, q). PrivKey structure
         }
         if(db.forms.insert_one(form)):
             return jsonify(message="Success",data=data,form=form), 200
