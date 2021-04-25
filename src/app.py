@@ -20,7 +20,7 @@ load_dotenv()  # Load dotenv before importing project level packages
 
 from drive import GoogleDrive
 from flow import get_flow, login_user
-
+from Encryption import encryption, keyGen
 # from models import User, OneTimeURL, db
 
 app = Flask(__name__)
@@ -46,6 +46,12 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 class Form:
 
     def createForm(self):
+        # generate key pair
+        # after keypair is generated, send public and private key into mongoDB. Also send public key into web browser form.
+        # public key will be send into the form creation and onto the web browser for js encryption.
+        # use public key to make verifyCode eventually
+        keyPair = keyGen.genKeys()
+        print(keyPair[1])
 
         data = json.loads(request.data)
         form = {
@@ -53,7 +59,9 @@ class Form:
             "createBy": User().get_current().get("email"),
             "formObj": data,
             "date": datetime.datetime.now(),
-            "verifyCode":id_generator()
+            "verifyCode":id_generator(),
+            "pubKey": (str(keyPair[0]['n']), str(keyPair[0]['e'])), # ‘n’ and ‘e’. PubKey structure
+            "privKey": (str(keyPair[1]['n']), str(keyPair[1]['e']), str(keyPair[1]['d']), str(keyPair[1]['p']), str(keyPair[1]['q'])),  # ‘n’, ‘e’, ‘d’, ‘p’, ‘q’. PrivKey structure
         }
         if(db.forms.insert_one(form)):
             return jsonify(message="Success",data=data,form=form), 200
@@ -64,6 +72,7 @@ class Form:
 #routes related to request Form
 @app.route('/rec-user-form', methods=['POST'])
 def rec_user_form():
+
     return Form().createForm()
 
 
@@ -110,6 +119,9 @@ class ResForm:
 
         data = json.loads(request.data)
         print(data, "data that got from client")
+        # encrypt data and send off to server
+        
+
         # add the responded form to its own schema
         respondantForm = {
             "_id": uuid.uuid4().hex,
