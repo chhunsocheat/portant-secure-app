@@ -51,7 +51,7 @@ class Form:
         # public key will be send into the form creation and onto the web browser for js encryption.
         # use public key to make verifyCode eventually
         keyPair = keyGen.genKeys()
-        print(keyPair[1])
+        # print(keyPair[1])
 
         data = json.loads(request.data)
         form = {

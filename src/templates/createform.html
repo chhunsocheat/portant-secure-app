@@ -15,9 +15,8 @@
   </div>
   <small id="emailHelp" class="form-text text-muted">We'll never share your info with anyone else.</small>
   <p style="display: none;" id="generated-link-wrapper">Link </p>
-  <button class="btn btn-primary" id="Copy-Text-Button" style="display:none; margin-left: 20px;" onclick="handleCopyText()">Copy Text</button>
+  <button class="btn btn-primary" id="Copy-Text-Button" style="display:none; margin-left: 20px;">Copy Text</button>
   <button class="btn btn-primary" id="add-new-field">Add New Field</button>
-
   <button class="btn btn-primary" id="generated-link-btn">Generated Link</button>
 
 </form>
@@ -25,9 +24,10 @@
 <script>
   let fieldCount = 1;
 
-  function handleCopyText() {
+  document.querySelector("#Copy-Text-Button").addEventListener("click", (e) => {
     var copyText = document.getElementById("generated-link").innerText;
-
+    e.preventDefault();
+    
     navigator.clipboard.writeText(copyText).then(
       function() {
         // succsess
@@ -36,7 +36,7 @@
         // failure
         alert("Failed to copy text!" + err);
       })
-  }
+  })
 
   //function to edit the label
   function editLabel(fieldID) {
@@ -69,6 +69,7 @@
   }
   editLabel(1)
   saveInput(1)
+
   //function to add new field
   document.querySelector("#add-new-field").addEventListener("click", (e) => {
     fieldCount++;
