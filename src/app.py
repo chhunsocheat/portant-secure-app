@@ -105,10 +105,10 @@ def verify_form1():
 @app.route('/respond-form/', methods=['POST', 'GET'])
 def respond_form():
     formID= request.args.get("formID")
-
     form=db.forms.find_one({ "_id": formID })
-    print(form)
-    return render_template("respond_form.html", formID=formID, form=form, userEmail=User().get_current().get("email"))
+    pubKey = form["pubKey"]
+    # print(form)
+    return render_template("respond_form.html", formID=formID, form=form, pubKey=pubKey, userEmail=User().get_current().get("email"))
 
 
 ############################################

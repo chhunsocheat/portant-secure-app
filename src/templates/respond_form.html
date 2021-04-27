@@ -13,7 +13,7 @@
     integrity="sha384-SZXxX4whJ79/gErwcOYf+zWLeJdY/qpuqC4cAa9rOGUstPomtqpuNWT9wdPEn2fk" crossorigin="anonymous">
 
   <script src="/static/vendor/jquery/js/jquery-3.3.1.min.js"></script>
-
+  <script src="../static/vendor/jsencrypt/js/jsencrypt.min.js"></script>
   <title>Document</title>
 </head>
 
@@ -62,6 +62,13 @@
         })
       });
       let data={respondArray:[...inputArr],sentFrom:email}
+      // encrypt data array here in JS
+      // access to public key is avaliable now under {{pubKey}}
+
+
+      var encrypt = new JSEncrypt();
+          encrypt.setPublicKey($('#pubkey').val());
+          var encrypted = encrypt.encrypt($('#input').val());
 
       fetch("/respond-user-form", {
           method: "POST",

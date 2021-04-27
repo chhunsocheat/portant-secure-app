@@ -36,3 +36,4 @@ urllib3==1.26.3
 Werkzeug==0.14.1
 pymongo==3.11.3
 uuid==1.30
+rsa==4.7.2
