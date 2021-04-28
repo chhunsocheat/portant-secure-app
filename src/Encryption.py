@@ -6,9 +6,7 @@ class keyGen:
         return keypair
 
 class encryption:
-    def decrypt(message, keypair):
-        # message = ""
-        # keypair = KeyGen.genKeys()
-        crypto = rsa.decrypt(message, keypair[1])
+    def decrypt(message, privKey):
+        crypto = rsa.decrypt(message, privKey)
         message.decode('utf8')
         print(message)

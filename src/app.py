@@ -145,6 +145,17 @@ class ResForm:
 
 @app.route('/respond-user-form', methods=['POST'])
 def respond_user_form():
+    # testing encryption
+    data = json.loads(request.data)
+    print("data:")
+    print(data[1])
+    pkey = db.forms.find_one({"_id": data[0]})
+    # make pkey(private key) array into original dictionary structure
+    msg = encryption.decrypt(request.data, )
+    print("plain Text:")
+    print(msg)
+
+    ######################
     return ResForm().resForm()
 
 

@@ -67,15 +67,20 @@
 
 
       var encrypt = new JSEncrypt();
-          encrypt.setPublicKey($('#pubkey').val());
-          var encrypted = encrypt.encrypt($('#input').val());
+      // encrypt.setPublicKey("{{pubKey}}");
+      encrypt.n = "{{pubKey[0]}}"
+      encrypt.e = "{{pubKey[1]}}"
+      var encrypted = encrypt.encrypt("hello");
+
+      let testarr = ["{{formID}}", encrypted]
 
       fetch("/respond-user-form", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify(data)
+          body: JSON.stringify(testarr)
+          // body: JSON.stringify(data)
         })
         .then(res => {
           return res.json()
