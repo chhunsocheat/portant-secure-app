@@ -11,6 +11,10 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css"
     integrity="sha384-SZXxX4whJ79/gErwcOYf+zWLeJdY/qpuqC4cAa9rOGUstPomtqpuNWT9wdPEn2fk" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/node-forge@0.7.0/dist/forge.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/simple-crypto-js@2.5.0/dist/SimpleCrypto.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+  <!-- <script src="../aes.js"></script> -->
 
   <script src="/static/vendor/jquery/js/jquery-3.3.1.min.js"></script>
   <script src="../static/vendor/jsencrypt/js/jsencrypt.min.js"></script>
@@ -42,53 +46,134 @@
     </form>
   </div>
   <script type="text/javascript">
-  var email = "{{ user.email | safe }}"; 
+    const secretKey = "some-unique-key"
+
+    const _secretKey = SimpleCrypto.generateRandom(256)
+    console.log(_secretKey, "secret key");
+    const simpleCrypto = new SimpleCrypto(_secretKey)
+    // const plainObject = {
+    //   SimpleCrypto: "is great.",
+    //   You: "should try it!",
+    //   Id: 1
+    // }
+    // const plainObject ="Secret Message"
+    // const cipherTextAES = simpleCrypto.encrypt(plainObject)
+    // console.log("Encryption process...")
+    // console.log("Plain Text    : " + plainObject)
+    // console.log("Cipher Text   : " + cipherTextAES)
+    // const decipherText = simpleCrypto.decrypt(cipherTextAES)
+    // console.log("... and then decryption...")
+    // console.log("Decipher Text : " + JSON.stringify(decipherText))
+    // console.log("... done.")
+
+     let plaintext = JSON.stringify({name:"Socheat",ID:"Heng",name:"Stella"}); 
+    let key = "ddfbccae-b4c4-11"
+    let iv = "ddfbccae-b4c4-11"
+
+    let cipherTextAES = aes_encrypt(plaintext, key, iv)
+    console.log('ciphertext', cipherTextAES)
+
+
+    function aes_encrypt(plaintext, key, iv) {
+      key = CryptoJS.enc.Utf8.parse(key)
+      iv = CryptoJS.enc.Utf8.parse(iv)
+      let srcs = CryptoJS.enc.Utf8.parse(plaintext)
+      let encrypted = CryptoJS.AES.encrypt(srcs, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+      })
+      return encrypted.ciphertext.toString()
+    }
+
+
+    function aes_decrypt(ciphertext, key, iv) {
+      key = CryptoJS.enc.Utf8.parse(key)
+      iv = CryptoJS.enc.Utf8.parse(iv)
+      let hex_string = CryptoJS.enc.Hex.parse(ciphertext)
+      let srcs = CryptoJS.enc.Base64.stringify(hex_string)
+      let decrypt = CryptoJS.AES.decrypt(srcs, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+      })
+      decrypt = decrypt.toString(CryptoJS.enc.Utf8)
+      return decrypt.toString()
+    }
+
+
+    plaintext = aes_decrypt(cipherTextAES, key, iv)
+    console.log('plaintext', plaintext)
+
+    var email = "{{ user.email | safe }}";
+
+
+
+    //KEY RSA_AES
+   
+
+
     document.querySelector("#send-to-user").addEventListener("click", (e) => {
       e.preventDefault();
-      document.querySelector("#send-to-user").innerHTML="Sending..."
-    
+      document.querySelector("#send-to-user").innerHTML = "Sending..."
+
       console.log(email);
       let inputArr = []
-     
+
       $("input").each(function () {
         if ($(this).val() === "") {
           alert(`Please Fill In The Value For ${$(this).attr("name")}`)
         }
         console.log($(this).attr("name"));
         inputArr.push({
-          inputLabel:$(this).attr("name"),
+          inputLabel: $(this).attr("name"),
           inputID: $(this).attr("id"),
           inputValue: $(this).val()
         })
       });
-      let data={respondArray:[...inputArr],sentFrom:email}
+
+      //RSA encryption to send the AES KEY
+     var publicKey = forge.pki.publicKeyFromPem("{{pubKey}}");
+
+      var secretMessage = "ddfbccae-b4c4-11";
+      var encrypted = publicKey.encrypt(JSON.stringify(secretMessage), "RSA-OAEP", {
+        md: forge.md.sha256.create(),
+        mgf1: forge.mgf1.create()
+      });
+      var RSA_Contain_AES_KEY = forge.util.encode64(encrypted);
+      console.log(RSA_Contain_AES_KEY, "RSA Encrypted");
+      //--------------------------------------------------------
+
+      let data = {
+        respondArray: [...inputArr],
+        sentFrom: email,
+        cipherTextAES,
+        RSA_Contain_AES_KEY
+      }
       // encrypt data array here in JS
       // access to public key is avaliable now under {{pubKey}}
 
 
-      var encrypt = new JSEncrypt();
-      // encrypt.setPublicKey("{{pubKey}}");
-      encrypt.n = "{{pubKey[0]}}"
-      encrypt.e = "{{pubKey[1]}}"
-      var encrypted = encrypt.encrypt("hello");
 
-      let testarr = ["{{formID}}", encrypted]
+      const urlParams = new URLSearchParams(window.location.search);
+      const formID = urlParams.get('formID');
 
-      fetch("/respond-user-form", {
+      fetch(`/respond-user-form/?formID=${formID}`, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            'Accept': 'application/json'
           },
-          body: JSON.stringify(testarr)
+          body: JSON.stringify(data)
           // body: JSON.stringify(data)
         })
         .then(res => {
           return res.json()
         })
         .then(data => {
-          document.querySelector("#send-to-user").innerHTML=`Done <i class="fas fa-check"></i>`;
-          document.querySelector("#send-to-user").disabled=true;
-          
+          document.querySelector("#send-to-user").innerHTML = `Done <i class="fas fa-check"></i>`;
+          document.querySelector("#send-to-user").disabled = true;
+
           document.querySelector("#send-to-user").classList.add("btn-success");
           console.log(data);
         })
