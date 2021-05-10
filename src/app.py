@@ -72,13 +72,13 @@ class Form:
         # after keypair is generated, send public and private key into mongoDB. Also send public key into web browser form.
         # public key will be send into the form creation and onto the web browser for js encryption.
         # use public key to make verifyCode eventually
-        keyPair = keyGen().genKeys()
-        print(keyPair)
         # print(keyPair[1])
-
+        formID= uuid.uuid4().hex
+        keyPair = keyGen().genKeys(formID)
+        print(keyPair)
         data = json.loads(request.data)
         form = {
-            "_id": uuid.uuid4().hex,
+            "_id": formID,
             "createBy": User().get_current().get("email"),
             "formObj": data,
             "date": datetime.datetime.now(),
@@ -186,7 +186,7 @@ class ResForm:
         ###################################
         #RSA Encryption Process
         #open the RSA private key file
-        f = open('privatekey.pem', 'rb')
+        f = open("RSA_private_key\%s.pem" %formID, 'rb')
         key = RSA.importKey(f.read())
         cipher = PKCS1_OAEP.new(key, hashAlgo=SHA256)
         decrypted_message = cipher.decrypt(
