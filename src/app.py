@@ -1,11 +1,35 @@
+from hashlib import md5
+from secrets import token_hex
+from user import routesMongo
+from Encryption import encryption, keyGen
+from flow import get_flow, login_user
+from drive import GoogleDrive
 import json
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, redirect, render_template, request, session,jsonify
+from flask import Flask, redirect, render_template, request, session, jsonify
 from google.auth.transport import requests
 from google.oauth2.id_token import verify_oauth2_token
 from functools import wraps
+
+
+#################################
+# Crypto Lib
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.PublicKey import RSA
+from Crypto.Hash import SHA256
+from base64 import b64decode
+# AES
+import base64
+import hashlib
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+# AES 2 Python
+from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.primitives.ciphers import algorithms
+from Crypto.Cipher import AES
+from binascii import b2a_hex, a2b_hex
 
 ###############################
 # for MongoDB
@@ -18,31 +42,29 @@ import string
 ###########################
 load_dotenv()  # Load dotenv before importing project level packages
 
-from drive import GoogleDrive
-from flow import get_flow, login_user
-from Encryption import encryption, keyGen
 # from models import User, OneTimeURL, db
 
 app = Flask(__name__)
-#register route blueprint
+# register route blueprint
 app.secret_key = os.getenv("SECRET_KEY")
-#mongoDB
-client=pymongo.MongoClient("localhost",27017)
-db=client.portant_app
-#try to import route but doesnt work
-from user import routesMongo
-from secrets import token_hex
-#SQL
+# mongoDB
+client = pymongo.MongoClient("localhost", 27017)
+db = client.portant_app
+# try to import route but doesnt work
+# SQL
 # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///../db.sqlite"
 # app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # db.init_app(app)
+
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
    return ''.join(random.choice(chars) for _ in range(size))
 
 #########################################
 # Custom form creation and save to mongoDB database
+
+
 class Form:
 
     def createForm(self):
@@ -50,7 +72,8 @@ class Form:
         # after keypair is generated, send public and private key into mongoDB. Also send public key into web browser form.
         # public key will be send into the form creation and onto the web browser for js encryption.
         # use public key to make verifyCode eventually
-        keyPair = keyGen.genKeys()
+        keyPair = keyGen().genKeys()
+        print(keyPair)
         # print(keyPair[1])
 
         data = json.loads(request.data)
@@ -59,34 +82,37 @@ class Form:
             "createBy": User().get_current().get("email"),
             "formObj": data,
             "date": datetime.datetime.now(),
-            "verifyCode":id_generator(),
-            "pubKey": (str(keyPair[0]['n']), str(keyPair[0]['e'])), # (n, e). PubKey structure
-            "privKey": (str(keyPair[1]['n']), str(keyPair[1]['e']), str(keyPair[1]['d']), str(keyPair[1]['p']), str(keyPair[1]['q'])),  # (n, e, d, p, q). PrivKey structure
+            "verifyCode": id_generator(),
+            "public_key": str(keyPair.get("public_key")),
+            "private_key": str(keyPair.get("private_key")),
+            # "pubKey": (str(keyPair[0]['n']), str(keyPair[0]['e'])), # (n, e). PubKey structure
+            # "privKey": (str(keyPair[1]['n']), str(keyPair[1]['e']), str(keyPair[1]['d']), str(keyPair[1]['p']), str(keyPair[1]['q'])),  # (n, e, d, p, q). PrivKey structure
         }
         if(db.forms.insert_one(form)):
-            return jsonify(message="Success",data=data,form=form), 200
+            return jsonify(message="Success", data=data, form=form), 200
         return jsonify(message="failed"), 400
 
 
 ############################################
-#routes related to request Form
+# routes related to request Form
 @app.route('/rec-user-form', methods=['POST'])
 def rec_user_form():
 
     return Form().createForm()
 
 
-
 # when user create their own request form
 @app.route("/createform")
 def createForm():
-    
+
     return render_template("createform.html")
+
 
 @app.route('/verify-form/', methods=['POST', 'GET'])
 def verify_form():
     formID = request.args.get("formID")
     return render_template("verify_modal.html")
+
 
 @app.route('/verify-form-redirect/', methods=['POST'])
 def verify_form1():
@@ -94,39 +120,94 @@ def verify_form1():
     verifyCodeClient = json.loads(request.data)
     formID = request.args.get("formID")
     form = db.forms.find_one({"_id": formID})
-    if(verifyCodeClient==form.get("verifyCode")):
+    if(verifyCodeClient == form.get("verifyCode")):
         print("Correct")
-        return jsonify(message="Verify Success",formID=formID), 200
+        return jsonify(message="Verify Success", formID=formID), 200
 
-    return jsonify(message="Verify Code Not Correct",verify=False), 404
+    return jsonify(message="Verify Code Not Correct", verify=False), 404
 
 # Search For Form created By user
 # get an id from the link and search for that document in the database to send back the custom form
+
+
 @app.route('/respond-form/', methods=['POST', 'GET'])
 def respond_form():
-    formID= request.args.get("formID")
-    form=db.forms.find_one({ "_id": formID })
-    pubKey = form["pubKey"]
-    # print(form)
-    return render_template("respond_form.html", formID=formID, form=form, pubKey=pubKey, userEmail=User().get_current().get("email"))
+
+    formID = request.args.get("formID")
+    form = db.forms.find_one({"_id": formID})
+    publicKey = form["public_key"]
+
+    return render_template("respond_form.html", formID=formID, form=form, pubKey=publicKey, userEmail=User().get_current().get("email"))
+
+
+#############################################
+class AesCrypto(object):
+    def __init__(self, key):
+        self.key = key.encode('utf-8')[:16]
+        self.iv = self.key
+        self.mode = AES.MODE_CBC
+
+    @staticmethod
+    def pkcs7_padding(data):
+        if not isinstance(data, bytes):
+            data = data.encode()
+        padder = padding.PKCS7(algorithms.AES.block_size).padder()
+        padded_data = padder.update(data) + padder.finalize()
+        return padded_data
+
+    def encrypt(self, plaintext):
+        cryptor = AES.new(self.key, self.mode, self.iv)
+        plaintext = plaintext
+        plaintext = self.pkcs7_padding(plaintext)
+        ciphertext = cryptor.encrypt(plaintext)
+        return b2a_hex(ciphertext).decode('utf-8')
+
+    def decrypt(self, ciphertext):
+        cryptor = AES.new(self.key, self.mode, self.iv)
+        plaintext = cryptor.decrypt(a2b_hex(ciphertext))
+        return bytes.decode(plaintext).rstrip('\0')
 
 
 ############################################
 # Respondant Form
 class ResForm:
+
     def resForm(self):
         print("Before Data")
 
         data = json.loads(request.data)
         print(data, "data that got from client")
         # encrypt data and send off to server
-        
+        # finding the id of the form to get the private key from the database
+        formID = request.args.get("formID")
+        form = db.forms.find_one({"_id": formID})
+        cipherText = data.get("cipherTextAES")
+
+        ###################################
+        #RSA Encryption Process
+        #open the RSA private key file
+        f = open('privatekey.pem', 'rb')
+        key = RSA.importKey(f.read())
+        cipher = PKCS1_OAEP.new(key, hashAlgo=SHA256)
+        decrypted_message = cipher.decrypt(
+            b64decode(data.get("RSA_Contain_AES_KEY")))
+        print(str(decrypted_message.decode()), "DECRYPTED MESSAGE RSA STRING")
+        AES_KEY = str(decrypted_message.decode()).strip('"')
+        ##################################
+        #AES Decryption using the key that was decrypted from RSA that was sent from the client side
+
+        aes = AesCrypto(AES_KEY) #decrypt with AES key that was encrypted with RSA
+        decryptedFormObject = aes.decrypt(cipherText)
+        print(decryptedFormObject,"Decrypted")
+        ##################################
+
+
 
         # add the responded form to its own schema
         respondantForm = {
             "_id": uuid.uuid4().hex,
             "sendBy": data.get("sentFrom"),
-            "formObj": data,
+            "formObj": decryptedFormObject,
             "date": datetime.datetime.now()
         }
         print("Before Success")
@@ -143,19 +224,14 @@ class ResForm:
 
 
 
-@app.route('/respond-user-form', methods=['POST'])
+@app.route('/respond-user-form/', methods=['POST'])
 def respond_user_form():
-    # testing encryption
-    data = json.loads(request.data)
-    print("data:")
-    print(data[1])
-    pkey = db.forms.find_one({"_id": data[0]})
-    # make pkey(private key) array into original dictionary structure
-    msg = encryption.decrypt(request.data, )
-    print("plain Text:")
-    print(msg)
+    # dMessage = ResForm().decrypt()
+    # print(dMessage,"D message")
+   
+    # print(dMessage,"Decode message")
 
-    ######################
+    # print(ord(dMessage[0]),"D message [0]")
     return ResForm().resForm()
 
 
@@ -186,7 +262,7 @@ class User:
         user = db.user.find_one({"email":email})
             
         # if there is no user in our database
-        #create user then return them
+        # create user then return them
         if not user:
             user={
                 "_id":uuid.uuid4().hex,
@@ -204,7 +280,7 @@ class User:
             }
             db.user.insert_one(user)
             return user
-        #otherwise return the user that was found by email in the database
+        # otherwise return the user that was found by email in the database
         return user
     def get_current(self):
         """
@@ -261,7 +337,7 @@ def inject_user():
     return dict(user=User().get_current())
 
 
-#main route
+# main route
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -296,7 +372,7 @@ def index():
 #     return str(varible_name)
 
 ############################################
-#routes related to Google Drive API stuff
+# routes related to Google Drive API stuff
 
 @app.route("/google-api")
 def google_api():

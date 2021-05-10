@@ -24,7 +24,6 @@
     const formID = urlParams.get('formID');
     document.querySelector("#verify-btn").addEventListener("click", (e) => {
       e.preventDefault();
-      console.log(formID);
 
       fetch(`/verify-form-redirect/?formID=${formID}`, {
           method: "POST",
