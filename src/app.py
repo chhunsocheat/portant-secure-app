@@ -183,39 +183,31 @@ class ResForm:
         form = db.forms.find_one({"_id": formID})
         cipherText = data.get("cipherTextAES")
 
-        ######################################
-        # privateKey = form["private_key"]
-        # print(privateKey,"Private Key")
-
+        ###################################
+        #RSA Encryption Process
+        #open the RSA private key file
         f = open('privatekey.pem', 'rb')
-
         key = RSA.importKey(f.read())
         cipher = PKCS1_OAEP.new(key, hashAlgo=SHA256)
         decrypted_message = cipher.decrypt(
             b64decode(data.get("RSA_Contain_AES_KEY")))
-        print(decrypted_message.decode(), "DECRYPTED MESSAGE RSA")
         print(str(decrypted_message.decode()), "DECRYPTED MESSAGE RSA STRING")
-        string1 = str(decrypted_message.decode())
-        print(string1.strip('"'),"String 1")
-        print(str(decrypted_message,"utf-8"), "DECRYPTED MESSAGE RSA STRING UTF8")
-        print("ddfbccae-b4c4-11", "DECRYPTED MESSAGE RSA STRING")
-        
-        aes = AesCrypto(string1.strip('"')) #decrypt with AES key that was encrypted with RSA
-        decrypted = aes.decrypt(cipherText)
-        print(decrypted,"Decrypted")
-        #######
-        # AES Decryption
-        
+        AES_KEY = str(decrypted_message.decode()).strip('"')
+        ##################################
+        #AES Decryption using the key that was decrypted from RSA that was sent from the client side
 
+        aes = AesCrypto(AES_KEY) #decrypt with AES key that was encrypted with RSA
+        decryptedFormObject = aes.decrypt(cipherText)
+        print(decryptedFormObject,"Decrypted")
+        ##################################
 
-        #######
 
 
         # add the responded form to its own schema
         respondantForm = {
             "_id": uuid.uuid4().hex,
             "sendBy": data.get("sentFrom"),
-            "formObj": data,
+            "formObj": decryptedFormObject,
             "date": datetime.datetime.now()
         }
         print("Before Success")

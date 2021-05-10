@@ -46,34 +46,14 @@
     </form>
   </div>
   <script type="text/javascript">
-    const secretKey = "some-unique-key"
+    var email = "{{ user.email | safe }}";
 
-    const _secretKey = SimpleCrypto.generateRandom(256)
-    console.log(_secretKey, "secret key");
-    const simpleCrypto = new SimpleCrypto(_secretKey)
-    // const plainObject = {
-    //   SimpleCrypto: "is great.",
-    //   You: "should try it!",
-    //   Id: 1
-    // }
-    // const plainObject ="Secret Message"
-    // const cipherTextAES = simpleCrypto.encrypt(plainObject)
-    // console.log("Encryption process...")
-    // console.log("Plain Text    : " + plainObject)
-    // console.log("Cipher Text   : " + cipherTextAES)
-    // const decipherText = simpleCrypto.decrypt(cipherTextAES)
-    // console.log("... and then decryption...")
-    // console.log("Decipher Text : " + JSON.stringify(decipherText))
-    // console.log("... done.")
+    //Key Generation
+    let randomKey= `${Math.random().toString(36).substring(3,11)}-${Math.random().toString(36).substring(3,7)}-${Math.random().toString(36).substring(3,5)}`
+    let key = randomKey
+    let iv = randomKey
 
-     let plaintext = JSON.stringify({name:"Socheat",ID:"Heng",name:"Stella"}); 
-    let key = "ddfbccae-b4c4-11"
-    let iv = "ddfbccae-b4c4-11"
-
-    let cipherTextAES = aes_encrypt(plaintext, key, iv)
-    console.log('ciphertext', cipherTextAES)
-
-
+      //Function to encrypt the formObject
     function aes_encrypt(plaintext, key, iv) {
       key = CryptoJS.enc.Utf8.parse(key)
       iv = CryptoJS.enc.Utf8.parse(iv)
@@ -85,33 +65,6 @@
       })
       return encrypted.ciphertext.toString()
     }
-
-
-    function aes_decrypt(ciphertext, key, iv) {
-      key = CryptoJS.enc.Utf8.parse(key)
-      iv = CryptoJS.enc.Utf8.parse(iv)
-      let hex_string = CryptoJS.enc.Hex.parse(ciphertext)
-      let srcs = CryptoJS.enc.Base64.stringify(hex_string)
-      let decrypt = CryptoJS.AES.decrypt(srcs, key, {
-        iv: iv,
-        mode: CryptoJS.mode.CBC,
-        padding: CryptoJS.pad.Pkcs7
-      })
-      decrypt = decrypt.toString(CryptoJS.enc.Utf8)
-      return decrypt.toString()
-    }
-
-
-    plaintext = aes_decrypt(cipherTextAES, key, iv)
-    console.log('plaintext', plaintext)
-
-    var email = "{{ user.email | safe }}";
-
-
-
-    //KEY RSA_AES
-   
-
 
     document.querySelector("#send-to-user").addEventListener("click", (e) => {
       e.preventDefault();
@@ -132,17 +85,17 @@
         })
       });
 
-      //RSA encryption to send the AES KEY
-     var publicKey = forge.pki.publicKeyFromPem("{{pubKey}}");
-
-      var secretMessage = "ddfbccae-b4c4-11";
-      var encrypted = publicKey.encrypt(JSON.stringify(secretMessage), "RSA-OAEP", {
+      //RSA encryption to encrypt and send the AES KEY with in a secure way
+      var publicKey = forge.pki.publicKeyFromPem("{{pubKey}}");
+      var encrypted = publicKey.encrypt(JSON.stringify(key), "RSA-OAEP", {
         md: forge.md.sha256.create(),
         mgf1: forge.mgf1.create()
       });
       var RSA_Contain_AES_KEY = forge.util.encode64(encrypted);
       console.log(RSA_Contain_AES_KEY, "RSA Encrypted");
       //--------------------------------------------------------
+      //encryting the formObj with the key and the iv
+      let cipherTextAES = aes_encrypt(JSON.stringify([...inputArr]), key, iv)
 
       let data = {
         respondArray: [...inputArr],
@@ -150,8 +103,6 @@
         cipherTextAES,
         RSA_Contain_AES_KEY
       }
-      // encrypt data array here in JS
-      // access to public key is avaliable now under {{pubKey}}
 
 
 
