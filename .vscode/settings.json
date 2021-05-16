@@ -3,7 +3,10 @@
         "src"
     ],
     
-    "python.autoComplete.extraPaths": ["src"]
+    "python.autoComplete.extraPaths": [
+        "src"
+    ],
+    "python.pythonPath": "venv\\Scripts\\python.exe"
 
     
 }

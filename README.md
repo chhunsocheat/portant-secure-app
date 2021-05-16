@@ -34,11 +34,6 @@ In the virtual environment, install dependencies from the requirements file.
 
         (venv) $ pip install -r requirements.txt
 
-<!-- 4. **Create Database**
-
-Create database tables. Before running the app for the first time or after making changes to the `model.py` file you will need to make the necessary tables in your database using the following command.
-
-        (venv) $ python src/create_db.py -->
 
 4. **Run**
 
