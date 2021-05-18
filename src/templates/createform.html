@@ -9,14 +9,17 @@
     <input name="input1" id="hiddenInput1" style="display: none;" />
     <button id="change1" style="display: none;" class="btn btn-success btn-sm">Change</button>
 
-    <input type="text" class="form-control" id="input-data1" aria-describedby="emailHelp"
-      placeholder="Enter Info">
+    <input type="text" class="form-control" id="input-data1" aria-describedby="emailHelp" placeholder="Enter Info">
 
+  </div>
+  <button style="margin-top: 10px;" class="btn btn-success" id="add-new-field">Add New Field</button>
+
+  <div style="margin-top: 10px;">
+    Recipient Email: <input type="text" name="recipientEmail">
   </div>
   <small id="emailHelp" class="form-text text-muted">We'll never share your info with anyone else.</small>
   <p style="display: none;" id="generated-link-wrapper">Link </p>
   <button class="btn btn-primary" id="Copy-Text-Button" style="display:none; margin-left: 20px;">Copy Text</button>
-  <button class="btn btn-primary" id="add-new-field">Add New Field</button>
   <button class="btn btn-primary" id="generated-link-btn">Generated Link</button>
 
 </form>
@@ -27,12 +30,13 @@
   document.querySelector("#Copy-Text-Button").addEventListener("click", (e) => {
     var copyText = document.getElementById("generated-link").innerText;
     e.preventDefault();
-    
+
     navigator.clipboard.writeText(copyText).then(
-      function() {
+      function () {
         // succsess
         alert("Copied the text: " + copyText);
-      }, function (err) {
+      },
+      function (err) {
         // failure
         alert("Failed to copy text!" + err);
       })
@@ -93,34 +97,47 @@
   // })
 
   $("#generated-link-btn").bind("click", (e) => {
-    let labelArray = []
     e.preventDefault();
+    
+    const recipientEmail = $('input[name="recipientEmail"]').val();
+    if(recipientEmail===""){
+      alert("Enter Your Recipient Email")
+      return;
+    }
+    document.querySelector("#generated-link-btn").innerHTML = "Submitting..."
+    console.log(recipientEmail);
+    let labelArray = []
     console.log($("label"));
     $("label").each(function () {
       labelArray.push({
         labelID: $(this).attr("id"),
-        labelText:$(this).text()
+        labelText: $(this).text()
       })
     });
-    fetch("/rec-user-form",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify(labelArray)
-    })
-    .then(res=>{
-      return res.json()
-    })
-    .then(data=>{
-      $("#generated-link-wrapper").html(`<a href="verify-form/?formID=${data.form._id}" id="generated-link">localhost:5000/verify-form/?formID=${data.form._id}</a>`);
-      document.querySelector("#generated-link-wrapper").style.display="inline-block"
-      document.querySelector("#Copy-Text-Button").style.display="inline-block"
-      document.querySelector("#generated-link-btn").style.display="none"
-      document.querySelector("#add-new-field").style.display="none"
-      console.log(data);
-    })
-    .catch(err=>alert(err))
+    fetch("/rec-user-form", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          formData: labelArray,
+          recipientEmail
+        })
+      })
+      .then(res => {
+        return res.json()
+      })
+      .then(data => {
+        $("#generated-link-wrapper").html(
+          `<a href="verify-form/?formID=${data.form._id}" id="generated-link">localhost:5000/verify-form/?formID=${data.form._id}</a>`
+          );
+        document.querySelector("#generated-link-wrapper").style.display = "inline-block"
+        document.querySelector("#Copy-Text-Button").style.display = "inline-block"
+        document.querySelector("#generated-link-btn").style.display = "none"
+        document.querySelector("#add-new-field").style.display = "none"
+        console.log(data);
+      })
+      .catch(err => alert(err))
 
   })
 </script>

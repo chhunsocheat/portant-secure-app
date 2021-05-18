@@ -13,7 +13,12 @@ from google.auth.transport import requests
 from google.oauth2.id_token import verify_oauth2_token
 from functools import wraps
 
+#################################
+#sending Email
+import smtplib
 
+# Import the email modules we'll need
+from email.message import EmailMessage
 #################################
 # Crypto Lib
 from Crypto.Cipher import PKCS1_OAEP
@@ -39,6 +44,8 @@ import pymongo
 import datetime
 import random
 import string
+import ast
+import itertools
 ###########################
 load_dotenv()  # Load dotenv before importing project level packages
 
@@ -72,15 +79,18 @@ class Form:
         # after keypair is generated, send public and private key into mongoDB. Also send public key into web browser form.
         # public key will be send into the form creation and onto the web browser for js encryption.
         # use public key to make verifyCode eventually
-        # print(keyPair[1])
+        
+       
         formID= uuid.uuid4().hex
         keyPair = keyGen().genKeys(formID)
         print(keyPair)
         data = json.loads(request.data)
+        print(data.get("formData"),"form Data")
+        print(data.get("recipientEmail"),"recipientEmail")
         form = {
             "_id": formID,
             "createBy": User().get_current().get("email"),
-            "formObj": data,
+            "formObj": data.get("formData"),
             "date": datetime.datetime.now(),
             "verifyCode": id_generator(),
             "public_key": str(keyPair.get("public_key")),
@@ -88,6 +98,24 @@ class Form:
             # "pubKey": (str(keyPair[0]['n']), str(keyPair[0]['e'])), # (n, e). PubKey structure
             # "privKey": (str(keyPair[1]['n']), str(keyPair[1]['e']), str(keyPair[1]['d']), str(keyPair[1]['p']), str(keyPair[1]['q'])),  # (n, e, d, p, q). PrivKey structure
         }
+        #############################
+        #email
+        # SMTP stuff
+        server = smtplib.SMTP("smtp.gmail.com",587)
+        server.starttls()
+        server.login("portantdemo@gmail.com","PortantDemo99")
+        msg = EmailMessage()
+        # me == the sender's email address
+        # you == the recipient's email address
+        recEmail= data.get("recipientEmail")
+        msg.set_content("Verification Code: "+form.get("verifyCode"))
+        msg['Subject'] = ' Verification Code'
+        msg['From'] = 'Portant <help@portant.com>'
+        msg['To'] = f'{recEmail}'
+        server.send_message(msg)
+        server.quit()
+        print("DONE")
+        #############################
         if(db.forms.insert_one(form)):
             return jsonify(message="Success", data=data, form=form), 200
         return jsonify(message="failed"), 400
@@ -167,7 +195,10 @@ class AesCrypto(object):
         plaintext = cryptor.decrypt(a2b_hex(ciphertext))
         return bytes.decode(plaintext).rstrip('\0')
 
-
+def Convert(a):
+    it = iter(a)
+    res_dct = dict(zip(it, it))
+    return res_dct
 ############################################
 # Respondant Form
 class ResForm:
@@ -211,7 +242,7 @@ class ResForm:
             "date": datetime.datetime.now()
         }
         print("Before Success")
-
+        
         # add the responded form to the user schema
         if(db.respondantForms.insert_one(respondantForm)):
             data["formId"] = respondantForm.get("_id")
