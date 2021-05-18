@@ -220,8 +220,7 @@ class ResForm:
         f = open("RSA_private_key\%s.pem" %formID, 'rb')
         key = RSA.importKey(f.read())
         cipher = PKCS1_OAEP.new(key, hashAlgo=SHA256)
-        decrypted_message = cipher.decrypt(
-            b64decode(data.get("RSA_Contain_AES_KEY")))
+        decrypted_message = cipher.decrypt(b64decode(data.get("RSA_Contain_AES_KEY")))
         print(str(decrypted_message.decode()), "DECRYPTED MESSAGE RSA STRING")
         AES_KEY = str(decrypted_message.decode()).strip('"')
         ##################################
@@ -229,8 +228,19 @@ class ResForm:
 
         aes = AesCrypto(AES_KEY) #decrypt with AES key that was encrypted with RSA
         decryptedFormObject = aes.decrypt(cipherText)
-        print(decryptedFormObject,"Decrypted")
+
         ##################################
+        #converting a cipher string to a format where eval can accept
+        #first the string, we need to replace " with '. 
+        #then the cipher text has some string appended at the end after decryption
+        #we have to strip that off at the end of the string
+        replaceDecrypt=decryptedFormObject.replace("\"","\'").split("]", 1)
+        completeString = replaceDecrypt[0]+"]"
+        actualData = list(eval(completeString))
+        ##################################
+        
+
+
 
 
 
@@ -242,7 +252,8 @@ class ResForm:
             "date": datetime.datetime.now()
         }
         print("Before Success")
-        
+        #add the respondArray to the data schema
+        data["respondArray"]=actualData
         # add the responded form to the user schema
         if(db.respondantForms.insert_one(respondantForm)):
             data["formId"] = respondantForm.get("_id")

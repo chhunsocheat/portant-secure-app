@@ -98,7 +98,6 @@
       let cipherTextAES = aes_encrypt(JSON.stringify([...inputArr]), key, iv)
 
       let data = {
-        respondArray: [...inputArr],
         sentFrom: email,
         cipherTextAES,
         RSA_Contain_AES_KEY
