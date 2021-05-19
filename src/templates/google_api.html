@@ -21,6 +21,12 @@
     {% if  user.respondForm|length <= 0 %}
         <h1>User has no form<hi />
     {% else %}
+        <div class="form-group">
+            <label for="document-title">Document Title</label>
+            <input type="text" id="document-title" class="form-control" name="document-title"
+                value="Document Title">
+        </div>
+
         {% for form in user.respondForm %}
             <div style="margin: 20px 0px;" class="card">
                 <div class="card-header">
@@ -30,20 +36,7 @@
                 </div>
             </div>
         {% endfor %}
-
-        <!-- <form id="create-document-form" style="max-width: 400px;" onsubmit="handleSubmit();">
-        <div class="form-group">
-            <label for="document-title">Document Title</label>
-            <input type="text" id="document-title" class="form-control" name="document-title"
-                value="Hello from Portant PACE">
-        </div>
-        <div class="form-group">
-            <label for="document-text">Document Body</label>
-            <textarea id="document-text" class="form-control" style="resize: none;" name="document-body"
-                rows="10">This document was automatically created with the Portant PACE project. 🥳</textarea>
-        </div> -->
         <button type="submit" class="btn btn-primary" onclick="handleSubmit();">Create</button>
-        <!-- </form> -->
 
     {% endif %}
 
@@ -86,15 +79,15 @@
         // let data = {}
         // for ({ name, value } of form.serializeArray())
         //     data[name] = value;
-
-        console.log(JSON.stringify(checkBoxes));
+        let data = [document.getElementById("document-title").value, checkBoxes];
+        console.log(JSON.stringify(data));
 
         fetch("/make-document", {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(checkBoxes)
+            body: JSON.stringify(data)
         })
             .then(res => res.json())
             .then(json => {

@@ -248,7 +248,7 @@ class ResForm:
         respondantForm = {
             "_id": uuid.uuid4().hex,
             "sendBy": data.get("sentFrom"),
-            "formObj": decryptedFormObject,
+            "formObj": actualData,
             "date": datetime.datetime.now()
         }
         print("Before Success")
@@ -439,11 +439,18 @@ def make_document():
     data = json.loads(request.data)
     print(data)
 
-    # user = User.get_current()
-    # drive = GoogleDrive(user)
+    user = User().get_current()
+    drive = GoogleDrive(user)
 
-    # document_id = drive.create_document(data["document-title"])
-    # drive.append_document_text(document_id, data["document-body"])
+    # document_id = drive.create_document(data[0])
+
+    formIDs = data[1]
+    docText = ""
+    for formID in formIDs:
+        form = db.respondantForms.find_one({"_id":formID})
+        docText += "\n"
+
+    # drive.append_document_text(document_id, docText)
 
     # payload = {"url": f"https://docs.google.com/document/d/{document_id}"}
     payload = {"url": f"https://docs.google.com/document/d/"}

@@ -13,7 +13,7 @@ GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 
 class GoogleDrive:
     def __init__(self, user):
-        user_creds = user.oauth_credentials
+        user_creds = user["oauth_credentials"]
 
         if not user_creds:
             raise ValueError("User does not have authentication details.")
