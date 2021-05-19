@@ -442,18 +442,20 @@ def make_document():
     user = User().get_current()
     drive = GoogleDrive(user)
 
-    # document_id = drive.create_document(data[0])
+    document_id = drive.create_document(data[0])
 
     formIDs = data[1]
     docText = ""
+    # Google drive doc builder #
+
     for formID in formIDs:
         form = db.respondantForms.find_one({"_id":formID})
+        docText += form["formObj"][0]["inputValue"]
         docText += "\n"
 
-    # drive.append_document_text(document_id, docText)
+    drive.append_document_text(document_id, docText)
 
-    # payload = {"url": f"https://docs.google.com/document/d/{document_id}"}
-    payload = {"url": f"https://docs.google.com/document/d/"}
+    payload = {"url": f"https://docs.google.com/document/d/{document_id}"}
     return (json.dumps(payload), 200)
 
 ############################################
