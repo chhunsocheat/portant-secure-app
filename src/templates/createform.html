@@ -108,7 +108,15 @@
     console.log(recipientEmail);
     let labelArray = []
     console.log($("label"));
-    $("label").each(function () {
+    // $("label").each(function () {
+    //   labelArray.push({
+    //     labelID: $(this).attr("id"),
+    //     labelTitle:$(this).attr("input1"),
+    //     labelText:$(this).text()
+    //   })
+    // });
+    
+    $("#input-container").each(function () {
       labelArray.push({
         labelID: $(this).attr("id"),
         labelText: $(this).text()

@@ -29,6 +29,7 @@
       <div id="input-container">
         <h1>Form Sent From {{user.email}}</h1>
         {% for label in form.formObj %}
+        <label id="label1" for="{{label.labelText}}">{{label.labelTitle}}</label>
         <label id="label1" for="{{label.labelText}}">{{label.labelText}}</label>
         <input type="text" name="{{label.labelText}}" class="form-control" id="input-{{label.labelID}}"
           aria-describedby="emailHelp" placeholder="Enter Info">

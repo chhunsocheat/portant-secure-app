@@ -1,6 +1,12 @@
 Things to do
 
-Encryption:
-    find proper place to implement encryption in JS. What file and where
-    how to pass public key into JS encryption
-    how to encrypt in JS!?
+important:
+    restructure to allow multiple respondents
+    generate authentication codes for every respondent
+
+General:
+    fix form info from user not being sent to respondent form
+
+Google Drive:
+    work on google drive implementation
+    continue work with inital idea for google drive
