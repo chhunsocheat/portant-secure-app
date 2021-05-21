@@ -448,13 +448,13 @@ def make_document():
 
 
     # Google drive doc builder #
-    docTitle = data[0] + "\n"
+    docTitle = data[0] + "\n\n"
     charCount = 1
     for formID in formIDs:
         form = db.respondantForms.find_one({"_id":formID})['formObj'][0]
         formHeader = form["inputLabel"][2:].replace("\n\n", "").replace(" ", "") + "\n\n"
-        docText = docTitle + formHeader
-        docText += form["inputValue"] + "\n"
+        formText = form["inputValue"] + "\n\n"
+        docText = docTitle + formHeader + formText
         drive.append_document_text(document_id, docText)
 
         if len(docTitle) > 0: 
@@ -474,8 +474,8 @@ def make_document():
         # form body style
         docStyles = {'bold': False, 'fontSize': {'magnitude': 12, 'unit': 'PT'} }
         docFields = 'bold, fontSize'
-        drive.update_document_text_style(document_id, charCount, len(docText), docStyles, docFields)
-        charCount += len(docText)
+        drive.update_document_text_style(document_id, charCount, len(formText) + charCount, docStyles, docFields)
+        charCount += len(formText)
         # set charCount to bottom of form data for next loop on next form
 
 
