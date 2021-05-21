@@ -85,6 +85,25 @@ class GoogleDrive:
 
         return results
 
+
+    # use this to update the doc text styles
+    def update_document_text_style(self, document_id, startI, endI, Style, fields):
+        """
+        Create an output document in users's Google Drive.
+
+        :returns: Document's ID
+        """
+
+        requests = []
+        requests.append(
+            { 'updateTextStyle': { 'range': { 'startIndex': startI, 'endIndex':endI }, 'textStyle': Style, 'fields': fields } }
+        )
+
+        body = {"requests": requests}
+        results = self.docs.batchUpdate(documentId=document_id, body=body).execute()
+
+        return results
+
     def create_folder(self, folder_name, *, parent="root"):
         """
         Create a folder in the users's Google Drive.

@@ -445,15 +445,40 @@ def make_document():
     document_id = drive.create_document(data[0])
 
     formIDs = data[1]
-    docText = ""
+
+
     # Google drive doc builder #
-
+    docTitle = data[0] + "\n"
+    charCount = 1
     for formID in formIDs:
-        form = db.respondantForms.find_one({"_id":formID})
-        docText += form["formObj"][0]["inputValue"]
-        docText += "\n"
+        form = db.respondantForms.find_one({"_id":formID})['formObj'][0]
+        formHeader = form["inputLabel"][2:].replace("\n\n", "").replace(" ", "") + "\n\n"
+        docText = docTitle + formHeader
+        docText += form["inputValue"] + "\n"
+        drive.append_document_text(document_id, docText)
 
-    drive.append_document_text(document_id, docText)
+        if len(docTitle) > 0: 
+            # title style
+            docStyles = {'bold': True, 'fontSize': {'magnitude': 17, 'unit': 'PT'} }
+            docFields = 'bold, fontSize'
+            drive.update_document_text_style(document_id, charCount, len(docTitle) + charCount, docStyles, docFields)
+            charCount += len(docTitle)
+            docTitle = ""
+
+        # form heading style
+        docStyles = {'bold': True, 'fontSize': {'magnitude': 14, 'unit': 'PT'} }
+        docFields = 'bold, fontSize'
+        drive.update_document_text_style(document_id, charCount, len(formHeader) + charCount, docStyles, docFields)
+        charCount+= len(formHeader)
+
+        # form body style
+        docStyles = {'bold': False, 'fontSize': {'magnitude': 12, 'unit': 'PT'} }
+        docFields = 'bold, fontSize'
+        drive.update_document_text_style(document_id, charCount, len(docText), docStyles, docFields)
+        charCount += len(docText)
+        # set charCount to bottom of form data for next loop on next form
+
+
 
     payload = {"url": f"https://docs.google.com/document/d/{document_id}"}
     return (json.dumps(payload), 200)
