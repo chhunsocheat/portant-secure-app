@@ -8,9 +8,11 @@
     {% if user %}
     Welcome, <b>{{user.given_name}} {{user.family_name}}</b>
     {% else %}
-    <ul>
-        <li><a href="/google-api">Login and Authorize Google</a></li>
-    </ul>
+    <!-- <ul>
+        <li> -->
+            <a class="btn btn-primary" href="/google-api">Login and Authorize Google</a>
+        <!-- </li>
+    </ul> -->
     {% endif %}
 </div>
 

@@ -83,7 +83,7 @@ class Form:
        
         formID= uuid.uuid4().hex
         keyPair = keyGen().genKeys(formID)
-        print(keyPair)
+        # print(keyPair)
         data = json.loads(request.data)
         print(data.get("formData"),"form Data")
         print(data.get("recipientEmail"),"recipientEmail")

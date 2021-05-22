@@ -46,9 +46,11 @@
                         <a href="/" class="nav-link">Home</a>
                         
                         <!-- <a href="/signup" class="nav-link">Sign Up</a> -->
-                        <a href="/createform" class="nav-link">Create Form</a>
+                        {% if user %}
+                            <a href="/createform" class="nav-link">Create Form</a>
+                        {% endif %}
                         <a href="/list-all-resp-forms" class="nav-link">List-all-resp-forms</a>
-                        <a href="/google-api" class="nav-link">Google API</a>
+                        <a href="/google-api" class="nav-link">Google Docs Builder</a>
                         {% if user %}
                             <a href="/logout" class="nav-link">Logout</a>
                         {% endif %}

@@ -2,24 +2,24 @@
 
 {% block content %}
 
-<h1>Google Docs API</h1>
+<h1>Google Docs Builder</h1>
 
 
-<h1>Notifiable Data Breaches Scheme</h1>
+<!-- <h1>Notifiable Data Breaches Scheme</h1> -->
 <ul>
     {% if not user %}
-    <li>
-        <a href="{{oauth_url}}">Authorize</a>
-    </li>
+    <!-- <li> -->
+        <a class="btn btn-primary" href="{{oauth_url}}">Authorize</a>
+    <!-- </li> -->
     {% endif %}
-    <li>
+    <!-- <li>
         <a href="https://developers.google.com/docs/api" target="_blank" rel="nofollow">Documentation</a>
-    </li>
+    </li> -->
 </ul>
 
 {% if user %}
     {% if  user.respondForm|length <= 0 %}
-        <h1>User has no form<hi />
+        <h1>User has no forms<hi />
     {% else %}
         <div class="form-group">
             <label for="document-title">Document Title</label>
@@ -45,6 +45,7 @@
 <script>
     var checkBoxes = new Array;
 
+    // add numbers to next to each check box to display what order the forms will be writted to google docs
     function handleCheckboxClick(element) {
         // fetch("/make-document", {
         //     method: "POST",
