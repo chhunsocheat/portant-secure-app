@@ -116,10 +116,13 @@
     //   })
     // });
     
+    // here is bug where formHeader has /n's in it!!!!
     $("#input-container").each(function () {
       labelArray.push({
         labelID: $(this).attr("id"),
-        labelText: $(this).text()
+        labelText: $(this).find("#input-data1")[0].value,
+        // labelText: $(this).find("label").text(),
+        labelTitle: $(this).find("label").text()
       })
     });
     fetch("/rec-user-form", {

@@ -30,7 +30,6 @@
         {% for form in user.respondForm %}
             <div style="margin: 20px 0px;" class="card">
                 <div class="card-header">
-                    <!-- {{form.formLabel}} -->
                     {{form.respondArray[0].inputLabel}}
                     <input type="checkbox" id="{{form.formId}}" style="float: right; width: 20px; height: 20px;" onclick="handleCheckboxClick(this)">
                 </div>
