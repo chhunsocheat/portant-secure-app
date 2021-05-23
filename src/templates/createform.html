@@ -4,12 +4,12 @@
 
 <form>
   <div id="input-container">
-    <label id="label1" class="Title" for="input1">Your Label</label><i style="cursor: pointer;margin-left: 0.5em;" id="edit1"
+    <label id="label1" for="input1">Your Label</label><i style="cursor: pointer;margin-left: 0.5em;" id="edit1"
       class="fas fa-edit"></i>
     <input name="input1" id="hiddenInput1" style="display: none;" />
     <button id="change1" style="display: none;" class="btn btn-success btn-sm">Change</button>
 
-    <input type="text" class="form-control SubText" id="input-data1" aria-describedby="emailHelp" placeholder="Enter Info">
+    <input type="text" class="form-control" id="input-data1" aria-describedby="emailHelp" placeholder="Enter Info">
 
   </div>
   <button style="margin-top: 10px;" class="btn btn-success" id="add-new-field">Add New Field</button>
@@ -79,11 +79,11 @@
   document.querySelector("#add-new-field").addEventListener("click", (e) => {
     fieldCount++;
     const newField =
-      `  <label id="label${fieldCount}" class="Title" for="input${fieldCount}">Your Label </label><i style="cursor: pointer;margin-left: 0.5em;" id="edit${fieldCount}" class="fas fa-edit"></i>
+      `  <label id="label${fieldCount}" for="input${fieldCount}">Your Label </label><i style="cursor: pointer;margin-left: 0.5em;" id="edit${fieldCount}" class="fas fa-edit"></i>
     <input id="hiddenInput${fieldCount}" style="display: none;" />
     <button id="change${fieldCount}" style="display: none;" class="btn btn-success btn-sm">Change</button>
 
-    <input type="text" class="form-control SubText" id="input-data${fieldCount}" aria-describedby="emailHelp"
+    <input type="text" class="form-control" id="input-data${fieldCount}" aria-describedby="emailHelp"
       placeholder="Enter Info">
     `
     e.preventDefault();
@@ -117,17 +117,14 @@
     //   })
     // });
     
-    // bug where only 1 form text is being added to the array
-    // labelText is where the bug exists
-    // find a way to loop through all elements from class selector and return a
-    //    string of all text field values
+    // here is bug where formHeader has /n's in it!!!!
     $("#input-container").each(function () {
       labelArray.push({
         labelID: $(this).attr("id"),
         labelText: $(this).find(".SubText").each((i, e) => {e.value}),
         // ;(function (i, e) {e.value}),
         // labelText: $(this).find("label").text(),
-        labelTitle: $(this).find(".Title").text()
+        labelTitle: $(this).find("label").text()
       })
     });
     fetch("/rec-user-form", {

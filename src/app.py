@@ -83,7 +83,7 @@ class Form:
        
         formID= uuid.uuid4().hex
         keyPair = keyGen().genKeys(formID)
-        # print(keyPair)
+        print(keyPair)
         data = json.loads(request.data)
         print(data.get("formData"),"form Data")
         print(data.get("recipientEmail"),"recipientEmail")
@@ -452,7 +452,7 @@ def make_document():
     charCount = 1
     for formID in formIDs:
         form = db.respondantForms.find_one({"_id":formID})['formObj'][0]
-        formHeader = form["inputLabel"][2:].replace("\n\n", "").replace(" ", "") + "\n\n"
+        formHeader = form["inputLabel"] + "\n\n"
         formText = form["inputValue"] + "\n\n"
         docText = docTitle + formHeader + formText
         drive.append_document_text(document_id, docText)
