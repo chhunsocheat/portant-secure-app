@@ -95,6 +95,8 @@ class Form:
             "verifyCode": id_generator(),
             "public_key": str(keyPair.get("public_key")),
             "private_key": str(keyPair.get("private_key")),
+            # "pubKey": (str(keyPair[0]['n']), str(keyPair[0]['e'])), # (n, e). PubKey structure
+            # "privKey": (str(keyPair[1]['n']), str(keyPair[1]['e']), str(keyPair[1]['d']), str(keyPair[1]['p']), str(keyPair[1]['q'])),  # (n, e, d, p, q). PrivKey structure
         }
         #############################
         #email
@@ -450,7 +452,7 @@ def make_document():
     charCount = 1
     for formID in formIDs:
         form = db.respondantForms.find_one({"_id":formID})['formObj'][0]
-        formHeader = form["inputLabel"] + "\n\n"
+        formHeader = form["inputLabel"][2:].replace("\n\n", "").replace(" ", "") + "\n\n"
         formText = form["inputValue"] + "\n\n"
         docText = docTitle + formHeader + formText
         drive.append_document_text(document_id, docText)

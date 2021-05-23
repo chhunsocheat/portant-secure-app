@@ -29,8 +29,8 @@
       <div id="input-container">
         <h1>Form Sent From {{user.email}}</h1>
         {% for label in form.formObj %}
-        <label id="label1" for="{{label.labelText}}">{{label.labelTitle}}</label><br/>
-        <label for="{{label.labelText}}">{{label.labelText}}</label>
+        <label id="label1" for="{{label.labelText}}">{{label.labelTitle}}</label>
+        <label id="label1" for="{{label.labelText}}">{{label.labelText}}</label>
         <input type="text" name="{{label.labelText}}" class="form-control" id="input-{{label.labelID}}"
           aria-describedby="emailHelp" placeholder="Enter Info">
 
@@ -80,8 +80,7 @@
         }
         console.log($(this).attr("name"));
         inputArr.push({
-          inputLabel: $("#label1").text(),
-          // inputLabel: $(this).attr("name"),
+          inputLabel: $(this).attr("name"),
           inputID: $(this).attr("id"),
           inputValue: $(this).val()
         })

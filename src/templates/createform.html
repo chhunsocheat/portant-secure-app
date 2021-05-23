@@ -116,6 +116,7 @@
     //   })
     // });
     
+<<<<<<< HEAD
     // bug where only 1 form text is being added to the array
     // labelText is where the bug exists
     // find a way to loop through all elements from class selector and return a
@@ -127,6 +128,12 @@
         // ;(function (i, e) {e.value}),
         // labelText: $(this).find("label").text(),
         labelTitle: $(this).find(".Title").text()
+=======
+    $("#input-container").each(function () {
+      labelArray.push({
+        labelID: $(this).attr("id"),
+        labelText: $(this).text()
+>>>>>>> parent of e134dd5 (update for google drive and more bug fixes)
       })
     });
     fetch("/rec-user-form", {
