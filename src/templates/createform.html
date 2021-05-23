@@ -24,6 +24,7 @@
 
 </form>
 
+
 <script>
   let fieldCount = 1;
 
@@ -116,33 +117,19 @@
     //   })
     // });
     
-// <<<<<<< HEAD
-// <<<<<<< HEAD
-//     // bug where only 1 form text is being added to the array
-//     // labelText is where the bug exists
-//     // find a way to loop through all elements from class selector and return a
-//     //    string of all text field values
-//     $("#input-container").each(function () {
-//       labelArray.push({
-//         labelID: $(this).attr("id"),
-//         labelText: $(this).find(".SubText").each((i, e) => {e.value}),
-//         // ;(function (i, e) {e.value}),
-//         // labelText: $(this).find("label").text(),
-//         labelTitle: $(this).find(".Title").text()
-// =======
-//     $("#input-container").each(function () {
-//       labelArray.push({
-//         labelID: $(this).attr("id"),
-//         labelText: $(this).text()
-// >>>>>>> parent of e134dd5 (update for google drive and more bug fixes)
-// =======
-//     $("#input-container").each(function () {
-//       labelArray.push({
-//         labelID: $(this).attr("id"),
-//         labelText: $(this).text()
-// >>>>>>> parent of e134dd5 (update for google drive and more bug fixes)
-    //   })
-    // });
+    // bug where only 1 form text is being added to the array
+    // labelText is where the bug exists
+    // find a way to loop through all elements from class selector and return a
+    //    string of all text field values
+    $("#input-container").each(function () {
+      labelArray.push({
+        labelID: $(this).attr("id"),
+        labelText: $(this).find(".SubText").each((i, e) => {e.value}),
+        // ;(function (i, e) {e.value}),
+        // labelText: $(this).find("label").text(),
+        labelTitle: $(this).find(".Title").text()
+      })
+    });
     fetch("/rec-user-form", {
         method: "POST",
         headers: {
@@ -167,8 +154,8 @@
         console.log(data);
       })
       .catch(err => alert(err))
-
+    
   })
-</script>
-
-{% endblock %}
+  </script>
+  
+  {% endblock %}
