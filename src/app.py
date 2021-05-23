@@ -385,34 +385,6 @@ def index():
     return render_template("index.html")
 
 
-
-
-# def check_Valid_URL(function):
-#     @wraps(function)
-#     def wrapper(URL):
-#         print("Checking URL sxists")
-#         if (OneTimeURL.CheckURLExists(URL) == False):
-#             print("URL doesn't exist")
-#             redirect("/")
-#         return function()
-#     return wrapper
-
-
-# @app.route("/page/<URL>")
-# @check_Valid_URL
-# def respondents_Submission(URL):
-#     context = {}
-#     return render_template("respondents_submission_page.html", **context)
-
-
-# varible_name = "hello"
-# example of dynamic routing and capturing variable from url
-# https://dev.to/ketanip/routing-in-flask-23ff#:~:text=Dynamic%20routing%20means%20getting%20dynamic,dynamic%20input%20from%20the%20URL.&text=You%20may%20get%20data%20from,but%20is%20recommended%20to%20use.&text=It%20will%20convert%20the%20given,pass%20it%20to%20the%20function.
-# @app.route('/<varible_name>/')
-# def DynamicUrl(varible_name):
-#     OneTimeURL.CreateURL(1)
-#     return str(varible_name)
-
 ############################################
 # routes related to Google Drive API stuff
 
@@ -451,32 +423,34 @@ def make_document():
     docTitle = data[0] + "\n\n"
     charCount = 1
     for formID in formIDs:
-        form = db.respondantForms.find_one({"_id":formID})['formObj'][0]
-        formHeader = form["inputLabel"] + "\n\n"
-        formText = form["inputValue"] + "\n\n"
-        docText = docTitle + formHeader + formText
-        drive.append_document_text(document_id, docText)
+        forms = db.respondantForms.find_one({"_id":formID})['formObj']
+        for field in forms:
+            # form = db.respondantForms.find_one({"_id":formID})['formObj'][0]
+            formHeader = field["inputLabel"] + "\n\n"
+            formText = field["inputValue"] + "\n\n"
+            docText = docTitle + formHeader + formText
+            drive.append_document_text(document_id, docText)
 
-        if len(docTitle) > 0: 
-            # title style
-            docStyles = {'bold': True, 'fontSize': {'magnitude': 17, 'unit': 'PT'} }
+            if len(docTitle) > 0: 
+                # title style
+                docStyles = {'bold': True, 'fontSize': {'magnitude': 17, 'unit': 'PT'} }
+                docFields = 'bold, fontSize'
+                drive.update_document_text_style(document_id, charCount, len(docTitle) + charCount, docStyles, docFields)
+                charCount += len(docTitle)
+                docTitle = ""
+
+            # form heading style
+            docStyles = {'bold': True, 'fontSize': {'magnitude': 14, 'unit': 'PT'} }
             docFields = 'bold, fontSize'
-            drive.update_document_text_style(document_id, charCount, len(docTitle) + charCount, docStyles, docFields)
-            charCount += len(docTitle)
-            docTitle = ""
+            drive.update_document_text_style(document_id, charCount, len(formHeader) + charCount, docStyles, docFields)
+            charCount+= len(formHeader)
 
-        # form heading style
-        docStyles = {'bold': True, 'fontSize': {'magnitude': 14, 'unit': 'PT'} }
-        docFields = 'bold, fontSize'
-        drive.update_document_text_style(document_id, charCount, len(formHeader) + charCount, docStyles, docFields)
-        charCount+= len(formHeader)
-
-        # form body style
-        docStyles = {'bold': False, 'fontSize': {'magnitude': 12, 'unit': 'PT'} }
-        docFields = 'bold, fontSize'
-        drive.update_document_text_style(document_id, charCount, len(formText) + charCount, docStyles, docFields)
-        charCount += len(formText)
-        # set charCount to bottom of form data for next loop on next form
+            # form body style
+            docStyles = {'bold': False, 'fontSize': {'magnitude': 12, 'unit': 'PT'} }
+            docFields = 'bold, fontSize'
+            drive.update_document_text_style(document_id, charCount, len(formText) + charCount, docStyles, docFields)
+            charCount += len(formText)
+            # set charCount to bottom of form data for next loop on next form
 
 
 

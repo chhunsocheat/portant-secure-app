@@ -30,56 +30,61 @@
         {% for form in user.respondForm %}
             <div style="margin: 20px 0px;" class="card">
                 <div class="card-header">
-                    <!-- {{form.formLabel}} -->
-                    {{form.respondArray[0].inputLabel}}
-                    <input type="checkbox" id="{{form.formId}}" style="float: right; width: 20px; height: 20px;" onclick="handleCheckboxClick(this)">
+                    {% for field in form.respondArray %}
+                        {% if loop.last %}
+                            {{field.inputLabel}}
+                        {% else %}
+                            {{field.inputLabel}} -
+                        {% endif %}
+                    {% endfor %}
+                        <input type="checkbox" id="{{form.formId}}" style="float: right; width: 20px; height: 20px;" onclick="handleCheckboxClick(this)">
+                        <div class="orderID" id="{{form.formId}}" style="float: right; margin-right: 20px; align-self: center;"></div>
                 </div>
             </div>
         {% endfor %}
-        <button type="submit" class="btn btn-primary" onclick="handleSubmit();">Create</button>
+        <button id="submitButton" type="submit" class="btn btn-primary" onclick="handleSubmit();">Create</button>
 
     {% endif %}
 
-<div id="document-result"></div>
+<div id="document-result" class="alert badge badge-success"></div>
 {% endif %}
 
 <script>
     var checkBoxes = new Array;
+    var checkBoxesToRemove = new Array;
 
-    // add numbers to next to each check box to display what order the forms will be writted to google docs
-    function handleCheckboxClick(element) {
-        // fetch("/make-document", {
-        //     method: "POST",
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     },
-        //     body: JSON.stringify(data)
-        // })
-        
-        
+    function handleCheckboxClick(element) {   
         if (checkBoxes.find(e => e == element.id)) {
             console.log("Removing");
-            checkBoxes = checkBoxes.filter(e => e != element.id);
+            checkBoxesToRemove.push(element.id)
+            removeCheckBoxNumbers();
+            DrawCheckBoxNumbers();
         } else {
             console.log("Adding");
-            checkBoxes.push(element.id)
+            checkBoxes.push(element.id);
+            DrawCheckBoxNumbers();
         }
-        // console.log(element.id);
-        // console.log(checkBoxes);
+        
+        function DrawCheckBoxNumbers() {
+            for (let i = 0; i < checkBoxes.length; i++) {
+                $("#"+checkBoxes[i])[0].nextElementSibling.innerText = (i+1).toString();
+            }
+        }
+        
+        function removeCheckBoxNumbers() {
+            for (let j = 0; j < checkBoxesToRemove.length; j++) {
+                checkBoxes = checkBoxes.filter(e => e != checkBoxesToRemove[j]);
+                $("#"+checkBoxesToRemove[j])[0].nextElementSibling.innerText = "";
+            }
+            checkBoxesToRemove = new Array; 
+        }
     }
+    
 
     function handleSubmit() {
         event.preventDefault();
-
-        // update this part so it retrieves all the selected forms and adds them together to submit to google drive
-        // const form = $('#create-document-form');
-        // form.css("display", "none");
-
         $("#document-result").html("Creating document...");
 
-        // let data = {}
-        // for ({ name, value } of form.serializeArray())
-        //     data[name] = value;
         let data = [document.getElementById("document-title").value, checkBoxes];
         console.log(JSON.stringify(data));
 
@@ -92,7 +97,7 @@
         })
             .then(res => res.json())
             .then(json => {
-                $("#document-result").html(`<a href="${json['url']}"" target="_blank" rel="nofollow">View Document</a>`);
+                $("#document-result").html(`<a href="${json['url']}"" target="_blank" rel="nofollow" class="badge-success">View Document</a>`);
             })
             .catch(console.log)
     }

@@ -29,11 +29,13 @@
       <div id="input-container">
         <h1>Form Sent From {{user.email}}</h1>
         {% for label in form.formObj %}
-        <label id="label1" for="{{label.labelText}}">{{label.labelTitle}}</label><br/>
-        <label id="label1" for="{{label.labelText}}">{{label.labelText}}</label>
-        <input type="text" name="{{label.labelText}}" class="form-control" id="input-{{label.labelID}}"
-          aria-describedby="emailHelp" placeholder="Enter Info">
+        <div class="Field" style="margin-bottom: 20px;">
+          <label id="{{label.labelID}}" for="{{label.labelText}}"><h3>{{label.labelTitle}}</h3></label><br/>
+          <label id="{{label.labelID}}" for="{{label.labelText}}"><h5>{{label.labelText}}</h5></label>
 
+          <input type="text" name="{{label.labelText}}" class="form-control" id="input-{{label.labelID}}"
+            aria-describedby="emailHelp" placeholder="Enter Info">
+        </div>
         {% endfor %}
 
 
@@ -74,62 +76,71 @@
       console.log(email);
       let inputArr = []
 
-      $("input").each(function () {
-        if ($(this).val() === "") {
-          alert(`Please Fill In The Value For ${$(this).attr("name")}`)
+      $(".Field").each(function () {
+        if ($(this).children()[0].textContent === "") {
+          alert(`Please Fill In The Value For ${$(this).children()[3].name}`)
         }
         console.log($(this).attr("name"));
         inputArr.push({
-          inputLabel: $("#label1").text(),
-          // inputLabel: $(this).attr("name"),
-          inputID: $(this).attr("id"),
-          inputValue: $(this).val()
+          inputLabel: $(this).children()[0].textContent,
+          inputID: $(this).children()[3].id,
+          inputValue: $(this).children()[3].value
         })
       });
 
-      //RSA encryption to encrypt and send the AES KEY with in a secure way
-      var publicKey = forge.pki.publicKeyFromPem("{{pubKey}}");
-      var encrypted = publicKey.encrypt(JSON.stringify(key), "RSA-OAEP", {
-        md: forge.md.sha256.create(),
-        mgf1: forge.mgf1.create()
-      });
-      var RSA_Contain_AES_KEY = forge.util.encode64(encrypted);
-      console.log(RSA_Contain_AES_KEY, "RSA Encrypted");
-      //--------------------------------------------------------
-      //encryting the formObj with the key and the iv
-      let cipherTextAES = aes_encrypt(JSON.stringify([...inputArr]), key, iv)
-
-      let data = {
-        sentFrom: email,
-        cipherTextAES,
-        RSA_Contain_AES_KEY
+      flag = true;
+      for (let i = 0; i < inputArr.length; i++) {
+        if (inputArr[i].inputValue === "") {
+          flag = false;
+        }
       }
 
+      if (flag) {
+        //RSA encryption to encrypt and send the AES KEY with in a secure way
+        var publicKey = forge.pki.publicKeyFromPem("{{pubKey}}");
+        var encrypted = publicKey.encrypt(JSON.stringify(key), "RSA-OAEP", {
+          md: forge.md.sha256.create(),
+          mgf1: forge.mgf1.create()
+        });
+        var RSA_Contain_AES_KEY = forge.util.encode64(encrypted);
+        console.log(RSA_Contain_AES_KEY, "RSA Encrypted");
+        //--------------------------------------------------------
+        //encryting the formObj with the key and the iv
+        let cipherTextAES = aes_encrypt(JSON.stringify([...inputArr]), key, iv)
+
+        let data = {
+          sentFrom: email,
+          cipherTextAES,
+          RSA_Contain_AES_KEY
+        }
 
 
-      const urlParams = new URLSearchParams(window.location.search);
-      const formID = urlParams.get('formID');
 
-      fetch(`/respond-user-form/?formID=${formID}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(data)
-          // body: JSON.stringify(data)
-        })
-        .then(res => {
-          return res.json()
-        })
-        .then(data => {
-          document.querySelector("#send-to-user").innerHTML = `Done <i class="fas fa-check"></i>`;
-          document.querySelector("#send-to-user").disabled = true;
+        const urlParams = new URLSearchParams(window.location.search);
+        const formID = urlParams.get('formID');
 
-          document.querySelector("#send-to-user").classList.add("btn-success");
-          console.log(data);
-        })
+        fetch(`/respond-user-form/?formID=${formID}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(data)
+            // body: JSON.stringify(data)
+          })
+          .then(res => {
+            return res.json()
+          })
+          .then(data => {
+            document.querySelector("#send-to-user").innerHTML = `Done <i class="fas fa-check"></i>`;
+            document.querySelector("#send-to-user").disabled = true;
 
+            document.querySelector("#send-to-user").classList.add("btn-success");
+            console.log(data);
+          })
+      } else {
+        document.querySelector("#send-to-user").innerHTML = "Send To Requester"
+      }
     })
   </script>
 
