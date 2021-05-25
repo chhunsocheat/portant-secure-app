@@ -420,7 +420,7 @@ def make_document():
 
 
     # Google drive doc builder #
-    docTitle = data[0] + "\n\n"
+    docTitle = '				' + data[0] + "\n\n"
     charCount = 1
     for formID in formIDs:
         forms = db.respondantForms.find_one({"_id":formID})['formObj']
