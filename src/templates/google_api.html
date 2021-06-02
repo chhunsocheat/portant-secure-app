@@ -97,7 +97,7 @@
         })
             .then(res => res.json())
             .then(json => {
-                $("#document-result").html(`<a href="${json['url']}"" target="_blank" rel="nofollow" class="badge-success">View Document</a>`);
+                $("#document-result").html(`<a href="${json['url']}"" target="_blank" rel="nofollow" class="badge-success" style="background-color:transparent !important;">View Document</a>`);
             })
             .catch(console.log)
     }
